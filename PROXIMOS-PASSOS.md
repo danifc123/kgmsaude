@@ -39,18 +39,77 @@ HTML/CSS a partir do conteúdo do post de Instagram que ela mandou como referên
 - Massagem terapêutica — R$ 130
 - Ventosa terapia — 30 min — R$ 80
 
-## O que falta construir
+## Plano — fluxo de agendamento completo (carrinho + sinal 50% + e-mail)
 
-Transformar o catálogo estático num fluxo de agendamento:
+**Status: só planejado, nada implementado ainda.** Escrito em 2026-09-22 pra não
+perder a ideia — falta confirmar com a Katiuschia se é isso mesmo que ela quer
+ou se ela prefere a versão mais simples descrita mais abaixo antes de eu
+começar a construir.
 
-1. Cada serviço fica selecionável (carrinho), acumulando no mesmo `index.html`.
-2. Resumo fixo mostra subtotal, **sinal (50%)** e o restante a pagar no dia.
-3. Formulário: nome, telefone, e-mail e data/período de preferência.
-4. Ao confirmar, uma função serverless recalcula o total **no servidor** (nunca confiar no valor vindo do navegador, pra ninguém adulterar o preço) e envia dois e-mails:
-   - **Para a Katiuschia:** pedido completo (serviços, total, sinal, contato do cliente).
-   - **Para o cliente:** confirmação da seleção + valor do sinal + aviso que ela vai entrar em contato pelo WhatsApp pra combinar o pagamento.
+### Confirmar com ela antes de implementar
 
-Cobrança automática de Pix fica para depois (fase posterior) — por enquanto ela cobra o sinal manualmente pelo WhatsApp.
+- [ ] **Fluxo completo (sinal automático + 2 e-mails) ou versão simples (WhatsApp)?** — ver comparação no fim deste documento.
+- [ ] **E-mail exato dela** para receber os pedidos (ela pediu pra ser o e-mail
+      dela mesma, mas não passou o endereço ainda).
+- [ ] Ela topa criar conta na **Vercel** (grátis) e conectar ao GitHub? Precisa
+      ser feito por ela/pelo Daniel, login não pode ser feito em nome dela.
+- [ ] Ela topa criar conta no **Resend** (grátis até 3.000 e-mails/mês) e gerar
+      uma API key?
+- [ ] O período de agendamento é só uma **preferência** (ex: "terça de manhã")
+      que ela confirma manualmente pelo WhatsApp depois — ou ela quer algum
+      tipo de checagem de disponibilidade real (agenda)? (Assumindo por
+      enquanto que é só preferência, sem agenda real — é bem mais simples.)
+
+### Arquitetura
+
+- **Frontend**: o próprio `index.html`, com um pouco de JS puro (sem
+  framework) pra controlar o estado do carrinho.
+- **Backend**: uma função serverless na Vercel, em `/api/agendar.js` — é a
+  única fonte confiável de preço (o JS do navegador pode ser adulterado, então
+  o servidor recalcula tudo do zero a partir da própria lista de serviços,
+  nunca confiando no total que vem do cliente).
+- **E-mail**: Resend, dois e-mails por pedido (um pra ela, um pra o cliente).
+
+### Passo a passo técnico
+
+1. **Catálogo de serviços centralizado** — criar algo como `services.js` com
+   `{ id, nome, categoria, duracao, precoCentavos }` pra cada serviço. Hoje a
+   lista só existe "hardcoded" dentro do HTML; vira a fonte única usada tanto
+   pra desenhar a página quanto pro servidor validar o pedido.
+2. **Carrinho no `index.html`** — cada `.service` vira clicável (estado
+   selecionado com borda/check dourado). A barra fixa de baixo (hoje é só o
+   botão "Agendar no WhatsApp") passa a mostrar: quantos serviços foram
+   escolhidos, subtotal, sinal (50%) e um botão "Continuar".
+3. **Formulário de agendamento** — abre depois do carrinho (modal ou nova
+   seção): nome, telefone, e-mail, período de preferência. Validação no
+   navegador é só UX, não é o que decide o valor final.
+4. **Endpoint `/api/agendar`** — recebe os IDs dos serviços escolhidos + dados
+   do formulário (nunca o preço, isso o servidor calcula sozinho). Envia:
+   - **Pra Katiuschia** (`ORDER_EMAIL`): pedido completo — serviços, total,
+     sinal, contato do cliente.
+   - **Pra o cliente**: confirmação da seleção, valor do sinal, aviso que ela
+     entra em contato pelo WhatsApp pra combinar o pagamento.
+5. **Variáveis de ambiente na Vercel**: `RESEND_API_KEY` e `ORDER_EMAIL` —
+   nunca ficam no código, só configuradas no painel da Vercel.
+6. **Deploy**: conectar o repositório GitHub à Vercel; a partir daí, todo push
+   na branch `main` publica automaticamente.
+
+### Fora de escopo (mesmo no fluxo completo)
+
+- Cobrança automática de Pix — ela cobra o sinal manualmente pelo WhatsApp.
+- Checagem real de agenda/disponibilidade — o sistema só coleta a preferência
+  de período, ela confirma o horário exato manualmente.
+- Painel administrativo pra ela editar conteúdo — já é um TODO separado, ver
+  seção abaixo.
+
+### Alternativa mais simples (se ela achar o plano acima grande demais)
+
+Carrinho igual (serviços clicáveis, resumo de subtotal), mas **sem backend
+nenhum**: o botão final monta a mensagem do WhatsApp já com os serviços
+escolhidos e o total, abrindo o `wa.me` preenchido. Sem sinal calculado
+automaticamente, sem e-mail, sem precisar de conta na Vercel nem no Resend —
+dá pra publicar isso hoje mesmo. Serve como primeiro passo e não impede
+evoluir pro fluxo completo depois, quando/se ela quiser.
 
 ## TODO futuro (fora do escopo desta etapa)
 
@@ -61,41 +120,23 @@ Cobrança automática de Pix fica para depois (fase posterior) — por enquanto 
   desenhado nem estimado — avaliar depois que o carrinho/agendamento estiver
   pronto.
 
-## Decisões técnicas já tomadas
-
-- Hospedagem: **Vercel** (grátis, roda funções serverless nativas em `/api` sem precisar de framework)
-- E-mail: **Resend** (grátis até 3.000 e-mails/mês, sem cartão)
-
-## Pendência
-
-Falta definir o e-mail que vai receber os pedidos dela (o dela mesmo, ou um seu provisório enquanto ela não usa o sistema sozinha) — sem isso a função de envio não pode ser configurada.
-
 ## Prompt para continuar (colar no Claude Code)
 
 ```
-Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). Já existe um
-index.html estático (catálogo + botão de WhatsApp) versionado no git, hoje sem
-logo/foto (wordmark em texto, aguardando arte definitiva da cliente). Preciso
-agora implementar:
-
-1. Seleção de serviços tipo carrinho na mesma página, com resumo fixo
-   mostrando subtotal, sinal de 50% e restante a pagar no dia.
-2. Formulário de agendamento (nome, telefone, e-mail, data/período de
-   preferência).
-3. Uma função serverless na Vercel (pasta /api) que recebe o pedido,
-   recalcula o total no servidor (nunca confiando no valor vindo do
-   cliente) e envia dois e-mails via Resend: um para [EMAIL_DA_KATIUSCHIA]
-   com o pedido completo, outro para o cliente confirmando a seleção e o
-   valor do sinal.
-4. Não implementar cobrança automática de Pix ainda — só avisar que ela
-   vai entrar em contato pelo WhatsApp para combinar o pagamento.
+Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). Conversei com a
+Katiuschia e o plano de agendamento (seção "Plano — fluxo de agendamento
+completo" no PROXIMOS-PASSOS.md) está confirmado assim: [DESCREVER O QUE ELA
+CONFIRMOU — fluxo completo, versão simples via WhatsApp, ou alguma mudança no
+plano].
 
 E-mail que deve receber os pedidos: [PREENCHER]
-Já tenho conta e API key da Resend? [SIM, a key é ... / NÃO, preciso criar]
+Já tenho conta na Vercel conectada ao repositório? [SIM / NÃO]
+Já tenho conta e API key do Resend? [SIM, a key é ... / NÃO, preciso criar]
 ```
 
 ## Como retomar de casa
 
 1. `git pull` (ou clonar o repositório, se for outra máquina)
-2. Preencher os dois campos `[...]` do prompt acima
-3. Colar no Claude Code dentro da pasta do projeto
+2. Confirmar com a Katiuschia os itens marcados com `[ ]` na seção do plano
+3. Preencher os campos `[...]` do prompt acima
+4. Colar no Claude Code dentro da pasta do projeto
