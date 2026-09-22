@@ -124,56 +124,19 @@
     font-family:'Fraunces',serif;
     font-style:italic;
     font-weight:600;
-    font-size:1.25rem;
+    font-size:1.55rem;
     color:var(--gold);
     text-align:center;
     margin:0;
-    padding:22px 16px 16px;
+    padding:24px 16px 18px;
   }
-  .about-body{
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
+  .about-photo{
+    width:100%;
   }
-  .about-lead{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-weight:500;
-    font-size:1.05rem;
-    color:var(--paper);
-    line-height:1.5;
-    margin:0;
-  }
-  .about-facts{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px 16px;
-  }
-  .about-col{
-    list-style:none;
-    margin:0;
-    padding:0;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-  .about-col li{
-    position:relative;
-    padding-left:14px;
-    font-size:0.76rem;
-    line-height:1.4;
-    color:var(--paper);
-  }
-  .about-col li::before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:0.5em;
-    width:5px;
-    height:5px;
-    border-radius:999px;
-    background:var(--gold);
+  .about-photo img{
+    display:block;
+    width:100%;
+    height:auto;
   }
 
   /* ---------- Menu ---------- */
@@ -333,29 +296,8 @@
   <div class="eyebrow"><div class="line"></div><span>Quem sou eu</span><div class="line"></div></div>
   <div class="about-card">
     <p class="about-title">Conheça Katiuschia Garcia</p>
-    <div class="about-body">
-      <p class="about-lead">Enfermeira e esteticista apaixonada por cuidar da beleza e do bem-estar de cada cliente.</p>
-      <div class="about-facts">
-        <ul class="about-col">
-          <li>Formada em Enfermagem</li>
-          <li>Graduada em Estética</li>
-          <li>Pós-graduada em Estética Avançada</li>
-          <li>Massoterapêuta</li>
-          <li>Especializada em Quick Massagem</li>
-          <li>Microagulhamento</li>
-          <li>Peeling químico</li>
-          <li>Ventosaterapia</li>
-          <li>Aromoterapia</li>
-          <li>Clareamento facial e corporal</li>
-        </ul>
-        <ul class="about-col">
-          <li>Nascida em 1980</li>
-          <li>Mulher forte e determinada</li>
-          <li>Amo caminhadas e ciclismo</li>
-          <li>Aberta ao conhecimento</li>
-          <li>Mãe de três filhos amados</li>
-        </ul>
-      </div>
+    <div class="about-photo">
+      <img src="assets/katiuschia-sobre.jpg" alt="Katiuschia Garcia — formação, especialidades e um pouco sobre ela" width="851" height="1016" loading="lazy">
     </div>
   </div>
 
