@@ -2,17 +2,31 @@
 
 ## Contexto
 
-`index.html` já é uma página completa (catálogo de serviços + botão de WhatsApp), no tema preto/dourado da marca, com a logo real dela em `assets/kg-logo.png`. Hoje ela só serve como link-na-bio: o cliente vê os serviços e é direcionado pro WhatsApp manualmente.
+`index.html` já é uma página completa (catálogo de serviços + botão de WhatsApp), no tema preto/dourado da marca. Hoje ela só serve como link-na-bio: o cliente vê os serviços e é direcionado pro WhatsApp manualmente.
+
+**Sem imagens no momento** — a Katiuschia não gostou do logo/foto que estavam sendo usados e vai criar as artes dela mesma num programa de imagem (design definitivo) e mandar depois. Enquanto isso:
+- Header usa uma wordmark em texto ("KG" + "Espaço Saúde & Bem-Estar") no lugar da logo.
+- Favicon é um SVG inline simples (não depende de arquivo).
+- A seção "Quem sou eu" ficou só com texto (título + bio + colunas de formação/pessoal), sem foto.
+
+Quando ela mandar a logo e a foto definitivas: salvar em `assets/`, trocar a wordmark do header pela `<img>` da logo (era assim antes, ver histórico do git) e adicionar de volta o bloco de foto na seção "Quem sou eu".
 
 Repositório git já inicializado (1 commit). Ainda **não publicado** num host de verdade — só rodou local / preview via artifact.
 
 ## Dados do negócio
 
-- Marca: KG Espaço Saúde e Bem Estar
-- Proprietária: Katiuschia Martelli — esteticista
+- Marca: KG Espaço Saúde e Bem Estar (KG Clínica de Estética)
+- Proprietária: Katiuschia Garcia — enfermeira e esteticista
 - WhatsApp: +55 99 98821-6488
-- Instagram: @kgmsaude_e_bem_estar_
+- Instagram: @katiuschia_garcia
 - Endereço: Rua Bela Vista, 550 — Bairro São Luís
+
+Categorias de serviço na página: **Facial** e **Corporal** (não "Rosto"/"Corpo").
+
+Seção "Quem sou eu" com bio (formação, especialidades, lado pessoal) recriada em
+HTML/CSS a partir do conteúdo do post de Instagram que ela mandou como referência
+(`assets/referencia-conheca-katiuschia.jpg`, local apenas, não versionado — ver
+`.gitignore`). Falta a foto dela nessa seção (pendente, ver nota acima).
 
 ### Serviços (nome — duração — preço)
 
@@ -38,6 +52,15 @@ Transformar o catálogo estático num fluxo de agendamento:
 
 Cobrança automática de Pix fica para depois (fase posterior) — por enquanto ela cobra o sinal manualmente pelo WhatsApp.
 
+## TODO futuro (fora do escopo desta etapa)
+
+- **Painel simples para ela editar o próprio conteúdo pelo celular** (ex: trocar o
+  @ do Instagram, textos, preços) sem precisar mexer no código. Ideia da própria
+  Katiuschia — ela usa muito mais o celular que o computador, então qualquer
+  painel administrativo deve ser desenhado mobile-first, igual o site. Ainda não
+  desenhado nem estimado — avaliar depois que o carrinho/agendamento estiver
+  pronto.
+
 ## Decisões técnicas já tomadas
 
 - Hospedagem: **Vercel** (grátis, roda funções serverless nativas em `/api` sem precisar de framework)
@@ -51,8 +74,9 @@ Falta definir o e-mail que vai receber os pedidos dela (o dela mesmo, ou um seu 
 
 ```
 Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). Já existe um
-index.html estático (catálogo + botão de WhatsApp) versionado no git, com a
-logo real da cliente em assets/kg-logo.png. Preciso agora implementar:
+index.html estático (catálogo + botão de WhatsApp) versionado no git, hoje sem
+logo/foto (wordmark em texto, aguardando arte definitiva da cliente). Preciso
+agora implementar:
 
 1. Seleção de serviços tipo carrinho na mesma página, com resumo fixo
    mostrando subtotal, sinal de 50% e restante a pagar no dia.

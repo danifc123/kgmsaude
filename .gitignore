@@ -1,6 +1,8 @@
 node_modules/
 .vercel/
 .DS_Store
+.playwright-mcp/
 
 # fotos de referência da cliente (não fazem parte do site)
 *-*-*-*-*.jpg
+assets/referencia-*.jpg
