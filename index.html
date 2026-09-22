@@ -139,6 +139,41 @@
     height:auto;
   }
 
+  /* ---------- Gallery ---------- */
+  .gallery{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    margin-inline:-20px;
+    padding:2px 20px 6px;
+  }
+  .gallery::-webkit-scrollbar{display:none;}
+  .gallery-item{
+    flex:0 0 auto;
+    width:66%;
+    max-width:260px;
+    aspect-ratio:4/5;
+    border-radius:16px;
+    overflow:hidden;
+    scroll-snap-align:center;
+    border:1px solid var(--hair);
+    background:var(--panel-2);
+  }
+  .gallery-item.gallery-item-wide{
+    width:86%;
+    max-width:340px;
+    aspect-ratio:4/3;
+  }
+  .gallery-item img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
   /* ---------- Menu ---------- */
   .menu-group{margin-bottom:6px;}
   .service{
@@ -299,6 +334,14 @@
     <div class="about-photo">
       <img src="assets/katiuschia-sobre.jpg" alt="Katiuschia Garcia — formação, especialidades e um pouco sobre ela" width="851" height="1016" loading="lazy">
     </div>
+  </div>
+
+  <div class="eyebrow"><div class="line"></div><span>No dia a dia</span><div class="line"></div></div>
+  <div class="gallery">
+    <div class="gallery-item"><img src="assets/katiuschia-retrato-1.jpg" alt="Katiuschia Garcia" width="619" height="1100" loading="lazy"></div>
+    <div class="gallery-item"><img src="assets/katiuschia-retrato-2.jpg" alt="Katiuschia Garcia" width="732" height="1100" loading="lazy"></div>
+    <div class="gallery-item"><img src="assets/katiuschia-procedimento.jpg" alt="Katiuschia Garcia em um procedimento" width="619" height="1100" loading="lazy"></div>
+    <div class="gallery-item gallery-item-wide"><img src="assets/katiuschia-espaco.jpg" alt="Espaço de atendimento" width="1100" height="619" loading="lazy"></div>
   </div>
 
   <div class="eyebrow"><div class="line"></div><span>Facial</span><div class="line"></div></div>
