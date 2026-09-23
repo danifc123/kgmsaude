@@ -171,7 +171,7 @@
     width:100%;
     height:100%;
     object-fit:cover;
-    object-position:center 12%;
+    object-position:center top;
     display:block;
   }
 
@@ -307,7 +307,7 @@
     max-width:480px;
     display:flex;
     gap:10px;
-  }
+  } 
   .cta-bar .inner[hidden]{display:none;}
   .btn{
     flex:1;
@@ -355,125 +355,6 @@
     font-variant-numeric:tabular-nums;
   }
   #cart-continue{flex:0 0 auto;padding-inline:22px;}
-
-  /* ---------- Booking modal ---------- */
-  .modal-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.72);
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    z-index:50;
-    padding-top:10vh;
-  }
-  .modal-overlay[hidden]{display:none;}
-  .modal-sheet{
-    width:100%;
-    max-width:480px;
-    background:var(--panel);
-    border:1px solid var(--hair);
-    border-radius:24px 24px 0 0;
-    padding:22px 20px calc(22px + env(safe-area-inset-bottom, 0px));
-    max-height:88vh;
-    overflow-y:auto;
-  }
-  .modal-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:14px;
-  }
-  .modal-title{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-size:1.2rem;
-    color:var(--gold);
-    margin:0;
-  }
-  .modal-close{
-    width:32px;height:32px;
-    border-radius:999px;
-    border:1px solid var(--hair);
-    background:none;
-    color:var(--paper);
-    font-size:1.1rem;
-    line-height:1;
-    cursor:pointer;
-  }
-  .modal-services{
-    list-style:none;
-    margin:0 0 14px;
-    padding:0;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .modal-services li{
-    display:flex;
-    justify-content:space-between;
-    font-size:0.85rem;
-    color:var(--paper);
-  }
-  .modal-services li .item-price{color:var(--muted);}
-  .modal-totals{
-    border-top:1px solid var(--hair);
-    border-bottom:1px solid var(--hair);
-    padding:12px 0;
-    margin-bottom:18px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .modal-row{
-    display:flex;
-    justify-content:space-between;
-    font-size:0.85rem;
-    color:var(--muted);
-  }
-  .modal-row strong{color:var(--paper);font-variant-numeric:tabular-nums;}
-  .modal-row-sinal{font-size:0.98rem;color:var(--paper);}
-  .modal-row-sinal strong{color:var(--gold);font-size:1.15rem;}
-  #booking-form{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-  }
-  .field{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    font-size:0.78rem;
-    color:var(--muted);
-  }
-  .field input,.field select{
-    font:inherit;
-    padding:11px 12px;
-    border-radius:10px;
-    border:1px solid var(--hair);
-    background:var(--panel-2);
-    color:var(--paper);
-  }
-  .field input:focus,.field select:focus{
-    outline:2px solid var(--gold);
-    outline-offset:1px;
-  }
-  .form-msg{
-    margin:4px 0 0;
-    font-size:0.8rem;
-    min-height:1.2em;
-  }
-  .form-msg.error{color:#e3897a;}
-  .form-msg.success{color:#8fce9b;}
-  .modal-note{
-    margin:14px 0 0;
-    font-size:0.72rem;
-    color:var(--muted);
-    line-height:1.5;
-    text-align:center;
-  }
-  #form-submit[disabled]{opacity:0.6;}
-  body.modal-open{overflow:hidden;}
 </style>
 </head>
 <body>
@@ -609,7 +490,7 @@
     </div>
   </div>
 
-  <p class="note">Toque nos serviços acima pra <strong>agendar com sinal de 50%</strong> direto por aqui, ou fale pelo WhatsApp.</p>
+  <p class="note">Toque nos serviços acima e finalize o agendamento direto pelo <strong>WhatsApp</strong>.</p>
 
   <footer>KG Espaço Saúde &amp; Bem-Estar</footer>
 </div>
@@ -630,58 +511,10 @@
       <span class="cart-count" id="cart-count">0 serviços selecionados</span>
       <span class="cart-total" id="cart-total">R$ 0,00</span>
     </div>
-    <button type="button" class="btn btn-primary" id="cart-continue">Continuar</button>
-  </div>
-</div>
-
-<div class="modal-overlay" id="booking-modal" hidden>
-  <div class="modal-sheet">
-    <div class="modal-head">
-      <p class="modal-title">Confirmar agendamento</p>
-      <button type="button" class="modal-close" id="modal-close" aria-label="Fechar">&times;</button>
-    </div>
-
-    <ul class="modal-services" id="modal-services"></ul>
-
-    <div class="modal-totals">
-      <div class="modal-row"><span>Subtotal</span><strong id="modal-subtotal">R$ 0,00</strong></div>
-      <div class="modal-row modal-row-sinal"><span>Sinal pra confirmar (50%)</span><strong id="modal-sinal">R$ 0,00</strong></div>
-      <div class="modal-row"><span>Restante no dia</span><strong id="modal-restante">R$ 0,00</strong></div>
-    </div>
-
-    <form id="booking-form">
-      <label class="field">
-        <span>Nome</span>
-        <input type="text" name="nome" required autocomplete="name">
-      </label>
-      <label class="field">
-        <span>Telefone (WhatsApp)</span>
-        <input type="tel" name="telefone" required autocomplete="tel" placeholder="(00) 00000-0000">
-      </label>
-      <label class="field">
-        <span>E-mail</span>
-        <input type="email" name="email" required autocomplete="email">
-      </label>
-      <label class="field">
-        <span>Período de preferência</span>
-        <select name="periodo" required>
-          <option value="" disabled selected>Selecione</option>
-          <option value="manha">Manhã</option>
-          <option value="tarde">Tarde</option>
-          <option value="noite">Noite</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Data de preferência (opcional)</span>
-        <input type="date" name="data">
-      </label>
-
-      <p class="form-msg" id="form-msg" role="status"></p>
-
-      <button type="submit" class="btn btn-primary" id="form-submit">Confirmar agendamento</button>
-    </form>
-
-    <p class="modal-note">Isso não cobra nada agora. A Katiuschia recebe seu pedido e entra em contato pelo WhatsApp pra combinar o pagamento do sinal e confirmar o horário.</p>
+    <button type="button" class="btn btn-primary" id="cart-continue">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.1a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-3-.2-.3A8.1 8.1 0 1 1 12 20.1Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1s-.6.8-.7.9-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.1 0-.3 0-.4s-.5-1.2-.7-1.6-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3a2.6 2.6 0 0 0-.8 1.9c0 1.1.8 2.2.9 2.3s1.6 2.5 3.9 3.4c1.9.8 2.3.6 2.7.6.4 0 1.4-.6 1.6-1.1s.2-1 .1-1.1-.2-.2-.4-.3Z"/></svg>
+      Continuar no WhatsApp
+    </button>
   </div>
 </div>
 
@@ -710,18 +543,9 @@
     var cartCountEl = document.getElementById("cart-count");
     var cartTotalEl = document.getElementById("cart-total");
     var continueBtn = document.getElementById("cart-continue");
+    var phone = "5599988216488";
 
-    var modal = document.getElementById("booking-modal");
-    var modalServices = document.getElementById("modal-services");
-    var modalSubtotal = document.getElementById("modal-subtotal");
-    var modalSinal = document.getElementById("modal-sinal");
-    var modalRestante = document.getElementById("modal-restante");
-    var modalClose = document.getElementById("modal-close");
-    var form = document.getElementById("booking-form");
-    var formMsg = document.getElementById("form-msg");
-    var formSubmit = document.getElementById("form-submit");
-
-    if(!ctaDefault || !form) return;
+    if(!ctaDefault || !continueBtn) return;
 
     function formatBRL(centavos){
       return "R$ " + (centavos / 100).toFixed(2).replace(".", ",");
@@ -769,91 +593,24 @@
       });
     });
 
-    function openModal(){
+    continueBtn.addEventListener("click", function(){
       var ids = Array.from(cart);
       if(ids.length === 0) return;
 
       var subtotal = 0;
-      modalServices.innerHTML = "";
-      ids.forEach(function(id){
+      var linhas = ids.map(function(id){
         var s = byId[id];
-        if(!s) return;
+        if(!s) return "";
         subtotal += s.precoCentavos;
-        var li = document.createElement("li");
-        li.innerHTML = "<span>" + s.nome + "</span><span class=\"item-price\">" + formatBRL(s.precoCentavos) + "</span>";
-        modalServices.appendChild(li);
+        return "- " + s.nome + " (" + formatBRL(s.precoCentavos) + ")";
       });
 
-      var sinal = Math.round(subtotal / 2);
-      var restante = subtotal - sinal;
-      modalSubtotal.textContent = formatBRL(subtotal);
-      modalSinal.textContent = formatBRL(sinal);
-      modalRestante.textContent = formatBRL(restante);
-      formMsg.textContent = "";
-      formMsg.className = "form-msg";
+      var msg = "Olá! Gostaria de agendar:\n" + linhas.join("\n") +
+        "\nTotal: " + formatBRL(subtotal) +
+        "\n\nAguardo confirmação de horário 😊";
 
-      modal.hidden = false;
-      document.body.classList.add("modal-open");
-    }
-
-    function closeModal(){
-      modal.hidden = true;
-      document.body.classList.remove("modal-open");
-    }
-
-    continueBtn.addEventListener("click", openModal);
-    modalClose.addEventListener("click", closeModal);
-    modal.addEventListener("click", function(e){
-      if(e.target === modal) closeModal();
-    });
-
-    form.addEventListener("submit", function(e){
-      e.preventDefault();
-      var ids = Array.from(cart);
-      if(ids.length === 0) return;
-
-      var data = new FormData(form);
-      var payload = {
-        servicos: ids,
-        nome: data.get("nome"),
-        telefone: data.get("telefone"),
-        email: data.get("email"),
-        periodo: data.get("periodo"),
-        data: data.get("data") || null
-      };
-
-      formSubmit.disabled = true;
-      formMsg.className = "form-msg";
-      formMsg.textContent = "Enviando...";
-
-      fetch("/api/agendar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-        .then(function(res){
-          return res.json().then(function(json){ return json; });
-        })
-        .then(function(json){
-          if(json && json.ok){
-            formMsg.className = "form-msg success";
-            formMsg.textContent = "Pedido enviado! Você vai receber um e-mail com os detalhes — a Katiuschia entra em contato pelo WhatsApp em breve.";
-            form.reset();
-            cart.clear();
-            updateCta();
-            setTimeout(closeModal, 3200);
-          } else {
-            formMsg.className = "form-msg error";
-            formMsg.textContent = (json && json.error) || "Não conseguimos enviar agora. Tente de novo ou chama no WhatsApp.";
-          }
-        })
-        .catch(function(){
-          formMsg.className = "form-msg error";
-          formMsg.textContent = "Não conseguimos enviar agora. Tente de novo ou chama no WhatsApp.";
-        })
-        .finally(function(){
-          formSubmit.disabled = false;
-        });
+      var link = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+      window.open(link, "_blank", "noopener");
     });
   })();
 </script>
