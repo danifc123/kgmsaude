@@ -11,7 +11,8 @@
 
 Quando ela mandar a logo e a foto definitivas: salvar em `assets/`, trocar a wordmark do header pela `<img>` da logo (era assim antes, ver histórico do git) e adicionar de volta o bloco de foto na seção "Quem sou eu".
 
-Repositório git já inicializado (1 commit). Ainda **não publicado** num host de verdade — só rodou local / preview via artifact.
+Repositório git com histórico de commits na branch `dev`. Ainda **não
+publicado** num host de verdade — só rodou local via `python -m http.server`.
 
 ## Dados do negócio
 
@@ -39,28 +40,75 @@ HTML/CSS a partir do conteúdo do post de Instagram que ela mandou como referên
 - Massagem terapêutica — R$ 130
 - Ventosa terapia — 30 min — R$ 80
 
-## Plano — fluxo de agendamento completo (carrinho + sinal 50% + e-mail)
+## Agendamento completo (carrinho + sinal 50% + e-mail) — CÓDIGO PRONTO
 
-**Status: só planejado, nada implementado ainda.** Escrito em 2026-09-22 pra não
-perder a ideia — falta confirmar com a Katiuschia se é isso mesmo que ela quer
-ou se ela prefere a versão mais simples descrita mais abaixo antes de eu
-começar a construir.
+**Status: implementado em 2026-09-23, ainda não publicado.** A Katiuschia
+confirmou que quer o sistema de verdade (não só WhatsApp). O código está
+todo pronto e testado localmente — falta só publicar (ver checklist de deploy
+mais abaixo).
 
-### Confirmar com ela antes de implementar
+O que já funciona (testado localmente com Playwright + testes de Node direto
+na função serverless):
+- Cada serviço é clicável (bolinha com check dourado) nas duas categorias.
+- Barra fixa de baixo troca pro resumo do carrinho assim que algo é
+  selecionado (quantidade + subtotal), com botão "Continuar".
+- Modal de confirmação mostra os serviços escolhidos, subtotal, **sinal
+  (50%)** e o restante a pagar no dia, mais o formulário (nome, telefone,
+  e-mail, período de preferência, data opcional).
+- Ao enviar, chama `POST /api/agendar`, que **recalcula tudo no servidor**
+  a partir de `services.js` (nunca confia no preço vindo do navegador) e
+  dispara os dois e-mails pelo Resend.
+- Erros (rede fora do ar, Resend não configurado, dados inválidos) mostram
+  mensagem amigável no modal, sem quebrar a página.
 
-- [ ] **Fluxo completo (sinal automático + 2 e-mails) ou versão simples (WhatsApp)?** — ver comparação no fim deste documento.
-- [ ] **E-mail exato dela** para receber os pedidos (ela pediu pra ser o e-mail
-      dela mesma, mas não passou o endereço ainda).
-- [ ] Ela topa criar conta na **Vercel** (grátis) e conectar ao GitHub? Precisa
-      ser feito por ela/pelo Daniel, login não pode ser feito em nome dela.
-- [ ] Ela topa criar conta no **Resend** (grátis até 3.000 e-mails/mês) e gerar
-      uma API key?
-- [ ] O período de agendamento é só uma **preferência** (ex: "terça de manhã")
-      que ela confirma manualmente pelo WhatsApp depois — ou ela quer algum
-      tipo de checagem de disponibilidade real (agenda)? (Assumindo por
-      enquanto que é só preferência, sem agenda real — é bem mais simples.)
+### Ainda pendente (bloqueia só o deploy, não o código)
 
-### Arquitetura
+- [ ] **E-mail exato dela** para receber os pedidos (`ORDER_EMAIL`) — ela
+      confirmou que quer ser o e-mail dela mesma, mas o endereço ainda não
+      foi passado.
+- [ ] Criar conta na **Vercel** (grátis) e conectar a este repositório do
+      GitHub — precisa ser feito por vocês, login não pode ser feito em nome
+      dela.
+- [ ] Criar conta no **Resend** (grátis até 3.000 e-mails/mês) e gerar uma
+      API key.
+- [ ] **Importante sobre o Resend**: enquanto não for verificado um domínio
+      próprio (ex: `kgmsaude.com.br`) na conta Resend, o modo sandbox só
+      permite enviar e-mail para o próprio endereço cadastrado na conta —
+      ou seja, o e-mail de confirmação pro *cliente* não vai chegar de
+      verdade em produção até isso ser feito. Pra testar rápido sem
+      domínio, dá pra usar o mesmo e-mail em `ORDER_EMAIL` e no formulário
+      de teste. Verificar domínio é simples (adicionar registros DNS no
+      Resend) mas precisa que o domínio já exista.
+- [ ] O período de agendamento é só uma **preferência** (ex: "terça de
+      manhã") que ela confirma manualmente pelo WhatsApp depois — não tem
+      checagem de disponibilidade real (agenda). Assumido assim por ser bem
+      mais simples; avisar se ela esperava outra coisa.
+
+### Arquivos do sistema
+
+- `services.js` — catálogo de serviços (id, nome, categoria, duração, preço
+  em centavos). Fonte única usada tanto pelo `index.html` quanto pela função
+  serverless. **Se mudar preço/serviço, é só editar aqui** — o site e o
+  e-mail se atualizam sozinhos.
+- `api/agendar.js` — função serverless (Node) que valida o pedido, recalcula
+  o total a partir de `services.js` e envia os e-mails via Resend.
+- `package.json` — declara a dependência `resend` (a Vercel instala sozinha
+  no deploy).
+
+### Checklist de deploy (fazer quando tiver os dados acima)
+
+1. Criar conta na [vercel.com](https://vercel.com), importar este
+   repositório do GitHub.
+2. No painel do projeto na Vercel → Settings → Environment Variables,
+   adicionar:
+   - `RESEND_API_KEY` — a key gerada no Resend.
+   - `ORDER_EMAIL` — o e-mail da Katiuschia que recebe os pedidos.
+3. Deploy (a Vercel faz automaticamente a cada push na branch `main`).
+4. Testar um agendamento de verdade no link publicado.
+5. Se o e-mail pro cliente não chegar: provavelmente é a limitação do modo
+   sandbox do Resend (ver nota acima) — verificar domínio resolve.
+
+### Arquitetura (referência)
 
 - **Frontend**: o próprio `index.html`, com um pouco de JS puro (sem
   framework) pra controlar o estado do carrinho.
@@ -70,30 +118,6 @@ começar a construir.
   nunca confiando no total que vem do cliente).
 - **E-mail**: Resend, dois e-mails por pedido (um pra ela, um pra o cliente).
 
-### Passo a passo técnico
-
-1. **Catálogo de serviços centralizado** — criar algo como `services.js` com
-   `{ id, nome, categoria, duracao, precoCentavos }` pra cada serviço. Hoje a
-   lista só existe "hardcoded" dentro do HTML; vira a fonte única usada tanto
-   pra desenhar a página quanto pro servidor validar o pedido.
-2. **Carrinho no `index.html`** — cada `.service` vira clicável (estado
-   selecionado com borda/check dourado). A barra fixa de baixo (hoje é só o
-   botão "Agendar no WhatsApp") passa a mostrar: quantos serviços foram
-   escolhidos, subtotal, sinal (50%) e um botão "Continuar".
-3. **Formulário de agendamento** — abre depois do carrinho (modal ou nova
-   seção): nome, telefone, e-mail, período de preferência. Validação no
-   navegador é só UX, não é o que decide o valor final.
-4. **Endpoint `/api/agendar`** — recebe os IDs dos serviços escolhidos + dados
-   do formulário (nunca o preço, isso o servidor calcula sozinho). Envia:
-   - **Pra Katiuschia** (`ORDER_EMAIL`): pedido completo — serviços, total,
-     sinal, contato do cliente.
-   - **Pra o cliente**: confirmação da seleção, valor do sinal, aviso que ela
-     entra em contato pelo WhatsApp pra combinar o pagamento.
-5. **Variáveis de ambiente na Vercel**: `RESEND_API_KEY` e `ORDER_EMAIL` —
-   nunca ficam no código, só configuradas no painel da Vercel.
-6. **Deploy**: conectar o repositório GitHub à Vercel; a partir daí, todo push
-   na branch `main` publica automaticamente.
-
 ### Fora de escopo (mesmo no fluxo completo)
 
 - Cobrança automática de Pix — ela cobra o sinal manualmente pelo WhatsApp.
@@ -101,15 +125,6 @@ começar a construir.
   de período, ela confirma o horário exato manualmente.
 - Painel administrativo pra ela editar conteúdo — já é um TODO separado, ver
   seção abaixo.
-
-### Alternativa mais simples (se ela achar o plano acima grande demais)
-
-Carrinho igual (serviços clicáveis, resumo de subtotal), mas **sem backend
-nenhum**: o botão final monta a mensagem do WhatsApp já com os serviços
-escolhidos e o total, abrindo o `wa.me` preenchido. Sem sinal calculado
-automaticamente, sem e-mail, sem precisar de conta na Vercel nem no Resend —
-dá pra publicar isso hoje mesmo. Serve como primeiro passo e não impede
-evoluir pro fluxo completo depois, quando/se ela quiser.
 
 ## TODO futuro (fora do escopo desta etapa)
 
@@ -123,20 +138,24 @@ evoluir pro fluxo completo depois, quando/se ela quiser.
 ## Prompt para continuar (colar no Claude Code)
 
 ```
-Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). Conversei com a
-Katiuschia e o plano de agendamento (seção "Plano — fluxo de agendamento
-completo" no PROXIMOS-PASSOS.md) está confirmado assim: [DESCREVER O QUE ELA
-CONFIRMOU — fluxo completo, versão simples via WhatsApp, ou alguma mudança no
-plano].
+Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). O sistema de
+agendamento (carrinho + sinal 50% + e-mail) já está implementado em
+services.js + api/agendar.js — falta só publicar. Preciso:
 
-E-mail que deve receber os pedidos: [PREENCHER]
+1. Criar/conectar conta na Vercel a este repositório do GitHub.
+2. Configurar as variáveis de ambiente RESEND_API_KEY e ORDER_EMAIL.
+3. Fazer o primeiro deploy e testar um agendamento de ponta a ponta.
+
+E-mail que deve receber os pedidos (ORDER_EMAIL): [PREENCHER]
 Já tenho conta na Vercel conectada ao repositório? [SIM / NÃO]
 Já tenho conta e API key do Resend? [SIM, a key é ... / NÃO, preciso criar]
+Já tenho um domínio pra verificar no Resend, ou vamos testar só com o
+e-mail da própria conta por enquanto? [PREENCHER]
 ```
 
 ## Como retomar de casa
 
 1. `git pull` (ou clonar o repositório, se for outra máquina)
-2. Confirmar com a Katiuschia os itens marcados com `[ ]` na seção do plano
-3. Preencher os campos `[...]` do prompt acima
-4. Colar no Claude Code dentro da pasta do projeto
+2. `npm install` (instala a dependência `resend` localmente, se for testar)
+3. Seguir o "Checklist de deploy" da seção de agendamento acima
+4. Preencher os campos `[...]` do prompt acima e colar no Claude Code
