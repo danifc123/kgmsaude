@@ -171,6 +171,7 @@
     width:100%;
     height:100%;
     object-fit:cover;
+    object-position:center 12%;
     display:block;
   }
 
@@ -738,6 +739,8 @@
       if(ids.length === 0){
         ctaDefault.hidden = false;
         ctaCart.hidden = true;
+        cartCountEl.textContent = "0 serviços selecionados";
+        cartTotalEl.textContent = "R$ 0,00";
         return;
       }
 
