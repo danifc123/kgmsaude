@@ -48,19 +48,14 @@
     align-items:center;
     gap:14px;
   }
-  .mark-text{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:4px;
+  .mark{
+    width:min(78%, 300px);
+    margin-bottom:-6px;
   }
-  .mark-kg{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-weight:600;
-    font-size:3rem;
-    line-height:1;
-    color:var(--gold);
+  .mark img{
+    display:block;
+    width:100%;
+    height:auto;
   }
   .mark-sub{
     font-size:0.68rem;
@@ -362,10 +357,10 @@
 <div class="wrap">
 
   <div class="hero">
-    <div class="mark-text">
-      <span class="mark-kg">KG</span>
-      <span class="mark-sub">Espaço Saúde &amp; Bem-Estar</span>
+    <div class="mark">
+      <img src="assets/kg-logo.png" alt="KG Espaço Saúde e Bem-Estar" width="720" height="621">
     </div>
+    <span class="mark-sub">Espaço Saúde &amp; Bem-Estar</span>
     <div class="owner">Katiuschia Garcia</div>
     <p class="role">Enfermeira e esteticista · Estética facial e corporal, massoterapia e bem-estar</p>
 
