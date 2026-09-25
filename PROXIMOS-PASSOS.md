@@ -62,7 +62,10 @@ Como funciona hoje:
   com uma mensagem pronta listando os serviços escolhidos e o total.
 - `services.js` continua sendo o catálogo único (id, nome, categoria,
   duração, preço) usado pra desenhar a lista e montar a mensagem — mudar
-  preço é só editar esse arquivo.
+  preço é só editar esse arquivo. **Importante**: depois de editar, também
+  aumentar o número em `services.js?v=2` (o `<script src="services.js?v=2">`
+  no final do `index.html`) — senão o navegador de quem já visitou o site
+  pode continuar usando os preços antigos em cache.
 
 ### Pendente
 
