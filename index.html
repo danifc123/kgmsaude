@@ -350,6 +350,122 @@
     font-variant-numeric:tabular-nums;
   }
   #cart-continue{flex:0 0 auto;padding-inline:22px;}
+
+  /* ---------- Pix / deposit popup ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.72);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:50;
+    padding-top:10vh;
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal-sheet{
+    width:100%;
+    max-width:480px;
+    background:var(--panel);
+    border:1px solid var(--hair);
+    border-radius:24px 24px 0 0;
+    padding:22px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  .modal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .modal-title{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:1.2rem;
+    color:var(--gold);
+    margin:0;
+  }
+  .modal-close{
+    width:32px;height:32px;
+    flex:0 0 auto;
+    border-radius:999px;
+    border:1px solid var(--hair);
+    background:none;
+    color:var(--paper);
+    font-size:1.1rem;
+    line-height:1;
+    cursor:pointer;
+  }
+  .modal-summary{
+    font-size:0.8rem;
+    color:var(--muted);
+    margin:0 0 16px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--hair);
+  }
+  .modal-summary strong{color:var(--gold);font-variant-numeric:tabular-nums;}
+  .pix-lead{
+    margin:0 0 14px;
+    font-size:0.88rem;
+    line-height:1.55;
+    color:var(--paper);
+  }
+  .pix-key-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel-2);
+    border:1px solid var(--hair);
+    border-radius:12px;
+    padding:10px 10px 10px 14px;
+    margin-bottom:18px;
+  }
+  .pix-key{
+    flex:1;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:0.92rem;
+    letter-spacing:0.02em;
+    color:var(--gold);
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+  .pix-copy{
+    flex:0 0 auto;
+    font:inherit;
+    font-size:0.76rem;
+    font-weight:600;
+    padding:9px 14px;
+    border-radius:999px;
+    border:none;
+    background:var(--gold);
+    color:#1c1508;
+    cursor:pointer;
+  }
+  .pix-copy:active{background:var(--gold-deep);}
+  .pix-copy.copied{background:#8fce9b;}
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-size:0.78rem;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  .field input{
+    font:inherit;
+    padding:11px 12px;
+    border-radius:10px;
+    border:1px solid var(--hair);
+    background:var(--panel-2);
+    color:var(--paper);
+  }
+  .field input:focus{
+    outline:2px solid var(--gold);
+    outline-offset:1px;
+  }
+  .modal-continue{width:100%;}
+  body.modal-open{overflow:hidden;}
 </style>
 </head>
 <body>
@@ -358,7 +474,7 @@
 
   <div class="hero">
     <div class="mark">
-      <img src="assets/kg-logo.png" alt="KG Espaço Saúde e Bem-Estar" width="720" height="624">
+      <img src="assets/kg-logo-transparente.png" alt="KG Espaço Saúde e Bem-Estar" width="600" height="495">
     </div>
     <span class="mark-sub">Espaço Saúde &amp; Bem-Estar</span>
     <div class="owner">Katiuschia Garcia</div>
@@ -521,12 +637,40 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="pix-modal" hidden>
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <p class="modal-title">Antes de continuar</p>
+      <button type="button" class="modal-close" id="pix-modal-close" aria-label="Fechar">&times;</button>
+    </div>
+
+    <p class="modal-summary" id="pix-modal-summary"></p>
+
+    <p class="pix-lead">Oi, tudo bem? Essa é minha chave Pix — você pode fazer o sinal de 50% por ela pra confirmar o agendamento. O restante é pago no dia do atendimento.</p>
+
+    <div class="pix-key-row">
+      <code class="pix-key" id="pix-key">63226867393</code>
+      <button type="button" class="pix-copy" id="pix-copy">Copiar</button>
+    </div>
+
+    <label class="field">
+      <span>Dia e horário de preferência</span>
+      <input type="text" id="pix-horario" placeholder="Ex: terça de manhã, sexta às 14h...">
+    </label>
+
+    <button type="button" class="btn btn-primary modal-continue" id="pix-modal-continue">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.1a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-3-.2-.3A8.1 8.1 0 1 1 12 20.1Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1s-.6.8-.7.9-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.1 0-.3 0-.4s-.5-1.2-.7-1.6-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3a2.6 2.6 0 0 0-.8 1.9c0 1.1.8 2.2.9 2.3s1.6 2.5 3.9 3.4c1.9.8 2.3.6 2.7.6.4 0 1.4-.6 1.6-1.1s.2-1 .1-1.1-.2-.2-.4-.3Z"/></svg>
+      Continuar no WhatsApp
+    </button>
+  </div>
+</div>
+
 <script src="services.js?v=2"></script>
 <script>
   (function(){
-    var phone = "5599988216488";
+    var phone = "5522999879500";
     var msg = encodeURIComponent("Olá! Vim pelo Instagram e gostaria de agendar um horário 😊");
-    var link = "https://wa.me/" + phone + "?text=" + msg;
+    var link = "https://api.whatsapp.com/send?phone=" + phone + "&text=" + msg;
     ["wa-icon","wa-text","wa-cta"].forEach(function(id){
       var el = document.getElementById(id);
       if(el) el.href = link;
@@ -546,7 +690,13 @@
     var cartCountEl = document.getElementById("cart-count");
     var cartTotalEl = document.getElementById("cart-total");
     var continueBtn = document.getElementById("cart-continue");
-    var phone = "5599988216488";
+    var phone = "5522999879500";
+
+    var pixModal = document.getElementById("pix-modal");
+    var pixModalSummary = document.getElementById("pix-modal-summary");
+    var pixModalClose = document.getElementById("pix-modal-close");
+    var pixModalContinue = document.getElementById("pix-modal-continue");
+    var horarioInput = document.getElementById("pix-horario");
 
     if(!ctaDefault || !continueBtn) return;
 
@@ -596,7 +746,7 @@
       });
     });
 
-    continueBtn.addEventListener("click", function(){
+    function abrirWhatsApp(){
       var ids = Array.from(cart);
       if(ids.length === 0) return;
 
@@ -605,15 +755,91 @@
         var s = byId[id];
         if(!s) return "";
         subtotal += s.precoCentavos;
-        return "- " + s.nome + " (" + formatBRL(s.precoCentavos) + ")";
+        return "• " + s.nome + " (" + formatBRL(s.precoCentavos) + ")";
       });
 
-      var msg = "Olá! Gostaria de agendar:\n" + linhas.join("\n") +
-        "\nTotal: " + formatBRL(subtotal) +
-        "\n\nAguardo confirmação de horário 😊";
+      var horario = horarioInput.value.trim();
 
-      var link = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+      var msg = "Olá! Gostaria de agendar:\n\n" + linhas.join("\n") +
+        "\n\n*Total: " + formatBRL(subtotal) + "*" +
+        "\n\nMeu horário de preferência: " + horario +
+        "\n\nAguardo confirmação 😊";
+
+      var link = "https://api.whatsapp.com/send?phone=" + phone + "&text=" + encodeURIComponent(msg);
       window.open(link, "_blank", "noopener");
+    }
+
+    function abrirPixModal(){
+      var ids = Array.from(cart);
+      if(ids.length === 0) return;
+
+      var subtotal = ids.reduce(function(soma, id){
+        return soma + (byId[id] ? byId[id].precoCentavos : 0);
+      }, 0);
+
+      pixModalSummary.textContent = ids.length + (ids.length === 1 ? " serviço selecionado — total " : " serviços selecionados — total ") + formatBRL(subtotal);
+
+      pixModal.hidden = false;
+      document.body.classList.add("modal-open");
+      horarioInput.focus();
+    }
+
+    function fecharPixModal(){
+      pixModal.hidden = true;
+      document.body.classList.remove("modal-open");
+      horarioInput.value = "";
+    }
+
+    continueBtn.addEventListener("click", abrirPixModal);
+    pixModalClose.addEventListener("click", fecharPixModal);
+    pixModal.addEventListener("click", function(e){
+      if(e.target === pixModal) fecharPixModal();
+    });
+    pixModalContinue.addEventListener("click", function(){
+      abrirWhatsApp();
+      fecharPixModal();
+    });
+  })();
+</script>
+<script>
+  (function(){
+    var btn = document.getElementById("pix-copy");
+    var key = document.getElementById("pix-key");
+    if(!btn || !key) return;
+
+    btn.addEventListener("click", function(){
+      var texto = key.textContent.trim();
+      var marcarCopiado = function(){
+        var original = btn.textContent;
+        btn.textContent = "Copiado!";
+        btn.classList.add("copied");
+        setTimeout(function(){
+          btn.textContent = original;
+          btn.classList.remove("copied");
+        }, 1800);
+      };
+
+      var copiarComFallback = function(){
+        var temp = document.createElement("textarea");
+        temp.value = texto;
+        temp.style.position = "fixed";
+        temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.select();
+        try{
+          document.execCommand("copy");
+          marcarCopiado();
+        }catch(e){
+          btn.textContent = "Toque e segure pra copiar";
+        }
+        document.body.removeChild(temp);
+      };
+
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(texto).then(marcarCopiado, copiarComFallback);
+      } else {
+        copiarComFallback();
+      }
     });
   })();
 </script>
