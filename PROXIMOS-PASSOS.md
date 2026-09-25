@@ -1,18 +1,33 @@
-# KG Espaço Saúde — próxima etapa: carrinho + sinal de 50% + pedido por e-mail
+# KG Espaço Saúde — status do projeto
 
 ## Contexto
 
-`index.html` já é uma página completa (catálogo de serviços + botão de WhatsApp), no tema preto/dourado da marca, com a logo real dela em `assets/kg-logo.png`. Hoje ela só serve como link-na-bio: o cliente vê os serviços e é direcionado pro WhatsApp manualmente.
+`index.html` já é uma página completa (catálogo de serviços + botão de WhatsApp), no tema preto/dourado da marca. Hoje ela só serve como link-na-bio: o cliente vê os serviços e é direcionado pro WhatsApp manualmente.
 
-Repositório git já inicializado (1 commit). Ainda **não publicado** num host de verdade — só rodou local / preview via artifact.
+**Sem imagens no momento** — a Katiuschia não gostou do logo/foto que estavam sendo usados e vai criar as artes dela mesma num programa de imagem (design definitivo) e mandar depois. Enquanto isso:
+- Header usa uma wordmark em texto ("KG" + "Espaço Saúde & Bem-Estar") no lugar da logo.
+- Favicon é um SVG inline simples (não depende de arquivo).
+- A seção "Quem sou eu" ficou só com texto (título + bio + colunas de formação/pessoal), sem foto.
+
+Quando ela mandar a logo e a foto definitivas: salvar em `assets/`, trocar a wordmark do header pela `<img>` da logo (era assim antes, ver histórico do git) e adicionar de volta o bloco de foto na seção "Quem sou eu".
+
+Repositório git com histórico de commits na branch `dev`. Ainda **não
+publicado** num host de verdade — só rodou local via `python -m http.server`.
 
 ## Dados do negócio
 
-- Marca: KG Espaço Saúde e Bem Estar
-- Proprietária: Katiuschia Martelli — esteticista
+- Marca: KG Espaço Saúde e Bem Estar (KG Clínica de Estética)
+- Proprietária: Katiuschia Garcia — enfermeira e esteticista
 - WhatsApp: +55 99 98821-6488
-- Instagram: @kgmsaude_e_bem_estar_
+- Instagram: @katiuschia_garcia
 - Endereço: Rua Bela Vista, 550 — Bairro São Luís
+
+Categorias de serviço na página: **Facial** e **Corporal** (não "Rosto"/"Corpo").
+
+Seção "Quem sou eu" com bio (formação, especialidades, lado pessoal) recriada em
+HTML/CSS a partir do conteúdo do post de Instagram que ela mandou como referência
+(`assets/referencia-conheca-katiuschia.jpg`, local apenas, não versionado — ver
+`.gitignore`). Falta a foto dela nessa seção (pendente, ver nota acima).
 
 ### Serviços (nome — duração — preço)
 
@@ -25,53 +40,66 @@ Repositório git já inicializado (1 commit). Ainda **não publicado** num host 
 - Massagem terapêutica — R$ 130
 - Ventosa terapia — 30 min — R$ 80
 
-## O que falta construir
+## Agendamento — carrinho + redirecionamento pro WhatsApp (IMPLEMENTADO)
 
-Transformar o catálogo estático num fluxo de agendamento:
+**Status: pronto, funcionando localmente.** Depois de conversar com a
+Katiuschia, ficou claro que o pedido original tinha sido mal entendido: ela
+**não quer** sinal automático, e-mail, nem nenhum método de pagamento no
+site. O fluxo certo é: o cliente escolhe os serviços e é encaminhado direto
+pro WhatsApp dela com a seleção já escrita na mensagem — ela confirma valor,
+horário e pagamento na conversa, como sempre fez.
 
-1. Cada serviço fica selecionável (carrinho), acumulando no mesmo `index.html`.
-2. Resumo fixo mostra subtotal, **sinal (50%)** e o restante a pagar no dia.
-3. Formulário: nome, telefone, e-mail e data/período de preferência.
-4. Ao confirmar, uma função serverless recalcula o total **no servidor** (nunca confiar no valor vindo do navegador, pra ninguém adulterar o preço) e envia dois e-mails:
-   - **Para a Katiuschia:** pedido completo (serviços, total, sinal, contato do cliente).
-   - **Para o cliente:** confirmação da seleção + valor do sinal + aviso que ela vai entrar em contato pelo WhatsApp pra combinar o pagamento.
+> Chegamos a implementar uma versão com carrinho + sinal de 50% + e-mail
+> automático (Resend/Vercel functions), mas foi removida em 2026-09-23 por
+> não ser o que ela queria. Se um dia isso mudar, o código ainda existe no
+> histórico do git (branch `dev`, commits de 23/09) e pode ser recuperado.
 
-Cobrança automática de Pix fica para depois (fase posterior) — por enquanto ela cobra o sinal manualmente pelo WhatsApp.
+Como funciona hoje:
+- Cada serviço é clicável (bolinha com check dourado) nas duas categorias.
+- Barra fixa de baixo troca pro resumo do carrinho assim que algo é
+  selecionado (quantidade + subtotal), com botão **"Continuar no WhatsApp"**.
+- Ao tocar no botão, abre o WhatsApp dela (mesmo número do resto do site)
+  com uma mensagem pronta listando os serviços escolhidos e o total.
+- `services.js` continua sendo o catálogo único (id, nome, categoria,
+  duração, preço) usado pra desenhar a lista e montar a mensagem — mudar
+  preço é só editar esse arquivo. **Importante**: depois de editar, também
+  aumentar o número em `services.js?v=2` (o `<script src="services.js?v=2">`
+  no final do `index.html`) — senão o navegador de quem já visitou o site
+  pode continuar usando os preços antigos em cache.
 
-## Decisões técnicas já tomadas
+### Pendente
 
-- Hospedagem: **Vercel** (grátis, roda funções serverless nativas em `/api` sem precisar de framework)
-- E-mail: **Resend** (grátis até 3.000 e-mails/mês, sem cartão)
+- [ ] **Texto da mensagem do WhatsApp**: a Katiuschia mandou um texto
+      pronto pra usar nessa mensagem — o Daniel vai repassar. Hoje o texto é
+      um padrão genérico ("Olá! Gostaria de agendar: ..."), gerado em
+      `index.html` dentro do `<script>` no final do arquivo (função do botão
+      `#cart-continue`). Trocar pelo texto dela assim que chegar.
 
-## Pendência
+## TODO futuro (fora do escopo desta etapa)
 
-Falta definir o e-mail que vai receber os pedidos dela (o dela mesmo, ou um seu provisório enquanto ela não usa o sistema sozinha) — sem isso a função de envio não pode ser configurada.
+- **Painel simples para ela editar o próprio conteúdo pelo celular** (ex: trocar o
+  @ do Instagram, textos, preços) sem precisar mexer no código. Ideia da própria
+  Katiuschia — ela usa muito mais o celular que o computador, então qualquer
+  painel administrativo deve ser desenhado mobile-first, igual o site. Ainda não
+  desenhado nem estimado — avaliar depois que o carrinho/agendamento estiver
+  pronto.
 
 ## Prompt para continuar (colar no Claude Code)
 
 ```
-Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). Já existe um
-index.html estático (catálogo + botão de WhatsApp) versionado no git, com a
-logo real da cliente em assets/kg-logo.png. Preciso agora implementar:
+Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). O carrinho já
+redireciona pro WhatsApp com os serviços escolhidos. Preciso trocar o texto
+da mensagem pelo que a Katiuschia mandou:
 
-1. Seleção de serviços tipo carrinho na mesma página, com resumo fixo
-   mostrando subtotal, sinal de 50% e restante a pagar no dia.
-2. Formulário de agendamento (nome, telefone, e-mail, data/período de
-   preferência).
-3. Uma função serverless na Vercel (pasta /api) que recebe o pedido,
-   recalcula o total no servidor (nunca confiando no valor vindo do
-   cliente) e envia dois e-mails via Resend: um para [EMAIL_DA_KATIUSCHIA]
-   com o pedido completo, outro para o cliente confirmando a seleção e o
-   valor do sinal.
-4. Não implementar cobrança automática de Pix ainda — só avisar que ela
-   vai entrar em contato pelo WhatsApp para combinar o pagamento.
+[COLAR O TEXTO DELA AQUI]
 
-E-mail que deve receber os pedidos: [PREENCHER]
-Já tenho conta e API key da Resend? [SIM, a key é ... / NÃO, preciso criar]
+Ele deve ir no lugar do texto padrão dentro do <script> no final do
+index.html, na função do botão #cart-continue.
 ```
 
 ## Como retomar de casa
 
 1. `git pull` (ou clonar o repositório, se for outra máquina)
-2. Preencher os dois campos `[...]` do prompt acima
-3. Colar no Claude Code dentro da pasta do projeto
+2. Abrir o `index.html` direto no navegador, ou rodar
+   `python -m http.server 8843` e abrir http://127.0.0.1:8843/index.html
+3. Colar o prompt acima no Claude Code com o texto que a Katiuschia mandou
