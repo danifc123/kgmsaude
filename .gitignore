@@ -7,3 +7,12 @@ node_modules/
 *-*-*-*-*.jpg
 assets/referencia-*.jpg
 assets/WhatsApp Image*.jpeg
+
+# backend (python)
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+backend/.env
+backend/*.db
