@@ -1,0 +1,116 @@
+/* Página de agendamento: resumo, dia, horário, dados e confirmação. */
+
+.summary-list{list-style:none;margin:0;padding:0;}
+.summary-list li{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:6px 0;
+  font-size:0.9rem;
+}
+.summary-list .price{color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.summary-total{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  padding-top:12px;
+  border-top:1px solid var(--hair);
+  font-weight:600;
+}
+.summary-total .price{color:var(--gold);}
+.summary-meta{margin-top:6px;font-size:0.75rem;color:var(--muted);}
+.summary-edit{
+  display:inline-block;
+  margin-top:12px;
+  font-size:0.78rem;
+  color:var(--gold);
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+
+/* ---------- Dias ---------- */
+.days{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  margin-inline:-20px;
+  padding:2px 20px 8px;
+  scroll-snap-type:x proximity;
+}
+.days::-webkit-scrollbar{display:none;}
+.day{
+  flex:0 0 58px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  padding:10px 0;
+  border-radius:14px;
+  border:1px solid var(--hair);
+  background:var(--panel);
+  cursor:pointer;
+  scroll-snap-align:start;
+}
+.day .dow{font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.day .num{font-family:'Fraunces',serif;font-size:1.25rem;}
+.day .mon{font-size:0.62rem;color:var(--muted);text-transform:lowercase;}
+.day[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--gold-ink);}
+.day[aria-pressed="true"] .dow,
+.day[aria-pressed="true"] .mon{color:var(--gold-ink);}
+
+/* ---------- Horários ---------- */
+.slots{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(72px, 1fr));
+  gap:8px;
+}
+.slot{
+  padding:11px 0;
+  border-radius:10px;
+  border:1px solid var(--hair);
+  background:var(--panel);
+  font-variant-numeric:tabular-nums;
+  font-size:0.9rem;
+  cursor:pointer;
+}
+.slot[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--gold-ink);font-weight:600;}
+
+/* ---------- Confirmação ---------- */
+.success{text-align:center;padding-top:34px;}
+.success-icon{
+  width:62px;height:62px;
+  margin:0 auto 14px;
+  border-radius:999px;
+  background:rgba(212,175,55,0.12);
+  border:1px solid var(--hair);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);
+}
+.success-icon svg{width:28px;height:28px;}
+.success h1{
+  margin:0 0 6px;
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-weight:500;
+  color:var(--gold);
+}
+.success .lead{margin:0 auto 22px;color:var(--muted);font-size:0.9rem;line-height:1.5;max-width:34ch;}
+.code{
+  display:inline-block;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:1.05rem;
+  letter-spacing:0.08em;
+  padding:6px 14px;
+  border-radius:999px;
+  border:1px solid var(--hair);
+  color:var(--gold);
+  margin-bottom:20px;
+}
+.success .card{text-align:left;margin-bottom:14px;}
+.detail-row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:0.88rem;}
+.detail-row .label{color:var(--muted);}
+.detail-row .value{text-align:right;}
+.deposit-title{margin:0 0 4px;font-weight:600;}
+.deposit-value{font-size:1.5rem;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;margin:0 0 10px;}
+.deposit-text{margin:0 0 14px;font-size:0.84rem;line-height:1.5;color:var(--muted);}

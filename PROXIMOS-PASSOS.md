@@ -1,105 +1,159 @@
-# KG Espaço Saúde — status do projeto
+# KG Espaço Saúde — status e próximos passos
 
-## Contexto
+## Onde estamos
 
-`index.html` já é uma página completa (catálogo de serviços + botão de WhatsApp), no tema preto/dourado da marca. Hoje ela só serve como link-na-bio: o cliente vê os serviços e é direcionado pro WhatsApp manualmente.
+- **`master`** (tag `v1.0.0`) — versão no ar hoje: página de link na bio,
+  carrinho → WhatsApp com a chave Pix para o sinal.
+- **`dev`** — **sistema de agendamento (fase 1) pronto e funcionando localmente.**
+  Falta só publicar (ver [Deploy](#deploy)).
 
-**Sem imagens no momento** — a Katiuschia não gostou do logo/foto que estavam sendo usados e vai criar as artes dela mesma num programa de imagem (design definitivo) e mandar depois. Enquanto isso:
-- Header usa uma wordmark em texto ("KG" + "Espaço Saúde & Bem-Estar") no lugar da logo.
-- Favicon é um SVG inline simples (não depende de arquivo).
-- A seção "Quem sou eu" ficou só com texto (título + bio + colunas de formação/pessoal), sem foto.
+### O que a fase 1 entrega
 
-Quando ela mandar a logo e a foto definitivas: salvar em `assets/`, trocar a wordmark do header pela `<img>` da logo (era assim antes, ver histórico do git) e adicionar de volta o bloco de foto na seção "Quem sou eu".
+**Cliente** (`/` → `/agendar.html`)
 
-Repositório git com histórico de commits na branch `dev`. Ainda **não
-publicado** num host de verdade — só rodou local via `python -m http.server`.
+1. Escolhe os serviços na página inicial (catálogo vem da API).
+2. Escolhe o dia (próximos 30) e um horário livre — a grade já desconta
+   agendamentos, folgas e a antecedência mínima, e considera a duração somada
+   dos serviços.
+3. Informa nome, WhatsApp (e endereço, se for massagem a domicílio).
+4. Recebe o código do agendamento (ex: `KG-7F3A`), o valor do sinal de 50% com a
+   chave Pix para copiar e um botão para mandar o comprovante no WhatsApp com
+   a mensagem pronta.
 
-## Dados do negócio
+O horário fica **reservado como "Aguardando sinal"** — ninguém mais consegue
+marcar por cima.
 
-- Marca: KG Espaço Saúde e Bem Estar (KG Clínica de Estética)
-- Proprietária: Katiuschia Garcia — enfermeira e esteticista
-- WhatsApp: +55 99 98821-6488
-- Instagram: @katiuschia_garcia
-- Endereço: Rua Bela Vista, 550 — Bairro São Luís
+**Katiuschia** (`/admin.html`, login com e-mail e senha)
 
-Categorias de serviço na página: **Facial** e **Corporal** (não "Rosto"/"Corpo").
+- Agenda por dia, "Todos os próximos" e filtro "Só pendentes".
+- Botões: **Confirmar sinal** → **Concluir**, ou **Cancelar** (libera o horário).
+- Link direto para o WhatsApp de cada cliente.
+- **Folgas e bloqueios**: dia inteiro ou faixa de horário, com motivo.
 
-Seção "Quem sou eu" com bio (formação, especialidades, lado pessoal) recriada em
-HTML/CSS a partir do conteúdo do post de Instagram que ela mandou como referência
-(`assets/referencia-conheca-katiuschia.jpg`, local apenas, não versionado — ver
-`.gitignore`). Falta a foto dela nessa seção (pendente, ver nota acima).
+> A conferência do Pix continua manual: ela vê o comprovante no WhatsApp e
+> toca em "Confirmar sinal". O checkout automático fica para a fase 2.
 
-### Serviços (nome — duração — preço)
+---
 
-- Revitalização facial — 1h — R$ 70
-- Revitalização labial — 15 min — R$ 50
-- Limpeza de pele — R$ 150
-- Detox termal — 30 min — R$ 120
-- Esfoliação corporal — 30 min — R$ 100
-- Massagem relaxante — 45 min — R$ 120
-- Massagem terapêutica — R$ 130
-- Ventosa terapia — 30 min — R$ 80
+## Decisões pendentes com a Katiuschia
 
-## Agendamento — carrinho + redirecionamento pro WhatsApp (IMPLEMENTADO)
+Valores provisórios já estão no sistema — só ajustar quando ela responder.
 
-**Status: pronto, funcionando localmente.** Depois de conversar com a
-Katiuschia, ficou claro que o pedido original tinha sido mal entendido: ela
-**não quer** sinal automático, e-mail, nem nenhum método de pagamento no
-site. O fluxo certo é: o cliente escolhe os serviços e é encaminhado direto
-pro WhatsApp dela com a seleção já escrita na mensagem — ela confirma valor,
-horário e pagamento na conversa, como sempre fez.
+| Pergunta | Hoje no sistema | Onde mudar |
+|---|---|---|
+| Duração da limpeza de pele e da massagem terapêutica | 60 min | `backend/app/seed.py` |
+| Dias e horários de atendimento | seg–sex 9h–18h, sáb 9h–13h | `backend/app/seed.py` (`EXPEDIENTE`) |
+| Antecedência mínima para agendar | 2h | `.env` → `ANTECEDENCIA_MINIMA_MINUTOS` |
+| Até quantos dias à frente | 30 | `.env` → `DIAS_MAXIMOS_AGENDAMENTO` |
+| Número do WhatsApp | `5522999879500` (o texto da página mostra `+55 99 98821-6488` — **conferir qual é o certo**) | `frontend/js/config.js` |
+| Chave Pix | `63226867393` | `frontend/js/config.js` |
+| Texto da mensagem do comprovante | genérico | `frontend/js/agendar.js` → `montarMensagemComprovante` |
+| Política de cancelamento / devolução do sinal | não definida | — |
 
-> Chegamos a implementar uma versão com carrinho + sinal de 50% + e-mail
-> automático (Resend/Vercel functions), mas foi removida em 2026-09-23 por
-> não ser o que ela queria. Se um dia isso mudar, o código ainda existe no
-> histórico do git (branch `dev`, commits de 23/09) e pode ser recuperado.
+O seed só insere dados quando a tabela está vazia. Depois do deploy, mudanças
+de expediente/serviço são feitas direto no banco (ou numa tela futura do painel).
 
-Como funciona hoje:
-- Cada serviço é clicável (bolinha com check dourado) nas duas categorias.
-- Barra fixa de baixo troca pro resumo do carrinho assim que algo é
-  selecionado (quantidade + subtotal), com botão **"Continuar no WhatsApp"**.
-- Ao tocar no botão, abre o WhatsApp dela (mesmo número do resto do site)
-  com uma mensagem pronta listando os serviços escolhidos e o total.
-- `services.js` continua sendo o catálogo único (id, nome, categoria,
-  duração, preço) usado pra desenhar a lista e montar a mensagem — mudar
-  preço é só editar esse arquivo. **Importante**: depois de editar, também
-  aumentar o número em `services.js?v=2` (o `<script src="services.js?v=2">`
-  no final do `index.html`) — senão o navegador de quem já visitou o site
-  pode continuar usando os preços antigos em cache.
+---
 
-### Pendente
+## Deploy
 
-- [ ] **Texto da mensagem do WhatsApp**: a Katiuschia mandou um texto
-      pronto pra usar nessa mensagem — o Daniel vai repassar. Hoje o texto é
-      um padrão genérico ("Olá! Gostaria de agendar: ..."), gerado em
-      `index.html` dentro do `<script>` no final do arquivo (função do botão
-      `#cart-continue`). Trocar pelo texto dela assim que chegar.
+Uma única aplicação: a API FastAPI serve `/api/*` e também os arquivos do
+`frontend/`. Por isso não há CORS nem duas hospedagens.
 
-## TODO futuro (fora do escopo desta etapa)
+1. **Banco**: criar um Postgres gratuito no [Neon](https://neon.tech) e copiar a
+   connection string (`postgresql+psycopg://…`).
+2. **API + site**: criar um Web Service no [Render](https://render.com) a partir
+   do repositório.
+   - Root directory: raiz do repo · Runtime: Python
+   - Build: `pip install -r backend/requirements.txt`
+   - Start: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - Variáveis: `ENVIRONMENT=production`, `DATABASE_URL`, `JWT_SECRET` (gerar um
+     novo), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (senha forte, passar pra ela em mãos),
+     `CORS_ORIGINS=["https://<dominio>"]`
+3. Abrir o site, fazer um agendamento de teste, confirmar e cancelar no painel.
+4. Trocar o link da bio do Instagram para o novo endereço.
+5. Backup da `master` → merge `dev` → `master` → tag **`v2.0.0`**.
 
-- **Painel simples para ela editar o próprio conteúdo pelo celular** (ex: trocar o
-  @ do Instagram, textos, preços) sem precisar mexer no código. Ideia da própria
-  Katiuschia — ela usa muito mais o celular que o computador, então qualquer
-  painel administrativo deve ser desenhado mobile-first, igual o site. Ainda não
-  desenhado nem estimado — avaliar depois que o carrinho/agendamento estiver
-  pronto.
+> O `backend/Dockerfile` copia só `app/`; se preferir deploy por Docker,
+> ajustar para copiar também o `frontend/`.
 
-## Prompt para continuar (colar no Claude Code)
+---
+
+## Fase 2 — checkout Pix automático (quando ela quiser)
+
+Trocar a conferência manual por uma cobrança Pix dinâmica (Mercado Pago):
+cada agendamento gera um QR code próprio e o webhook confirma sozinho.
+
+- [ ] Conta Mercado Pago dela + credenciais de teste
+- [ ] `app/gateways/` com `PaymentGateway` (interface) e `MercadoPagoGateway`
+- [ ] Tabela `pagamentos` (id do provedor único, valor, status, copia e cola, QR)
+- [ ] `POST /api/agendamentos` passa a devolver o QR code; reserva expira em 30 min sem pagamento
+- [ ] `POST /api/pagamentos/webhook`: valida `x-signature`, consulta o pagamento na API, confirma (idempotente)
+- [ ] Tela de checkout com QR + copia e cola + polling do status
+- [ ] Rate limit no `POST /api/agendamentos`
+
+## Ideias para depois
+
+- Tela no painel para editar preços, durações e expediente.
+- Lembrete automático no WhatsApp na véspera.
+- Testes automatizados (unit + integração + E2E) — a estrutura `backend/tests/`
+  já existe; prioridade para `gerar_horarios_livres` e `calcular_sinal`.
+- Migrations com Alembic quando o banco de produção tiver dados que não podem
+  ser recriados (hoje as tabelas são criadas com `create_all` na subida).
+
+---
+
+## Estrutura
 
 ```
-Estou continuando o projeto KG Espaço Saúde (pasta kgmsaude). O carrinho já
-redireciona pro WhatsApp com os serviços escolhidos. Preciso trocar o texto
-da mensagem pelo que a Katiuschia mandou:
+backend/app/
+├── main.py            # create_app: CORS, handlers, routers em /api, frontend em /
+├── config.py          # Settings (.env)
+├── database.py        # engine, SessionLocal, Base
+├── dependencies.py    # get_db, services, get_current_admin (JWT)
+├── exceptions.py      # AppError → 401/404/409/422
+├── clock.py           # agora no fuso do espaço
+├── seed.py            # serviços, expediente e admin iniciais
+├── models/            # Servico, HorarioFuncionamento, Bloqueio, Agendamento(+Item), Usuario
+├── schemas/           # Pydantic (snake_case ↔ camelCase)
+├── repositories/      # acesso a dados
+├── services/          # catálogo, agenda, agendamento, auth
+└── routers/           # health, servicos, agenda, agendamentos, auth, admin
 
-[COLAR O TEXTO DELA AQUI]
-
-Ele deve ir no lugar do texto padrão dentro do <script> no final do
-index.html, na função do botão #cart-continue.
+frontend/
+├── index.html · agendar.html · admin.html
+├── css/   base.css + um por página
+├── js/    api, carrinho, config, dom, formatadores + um por página (ES modules)
+└── assets/
 ```
 
-## Como retomar de casa
+### API
 
-1. `git pull` (ou clonar o repositório, se for outra máquina)
-2. Abrir o `index.html` direto no navegador, ou rodar
-   `python -m http.server 8843` e abrir http://127.0.0.1:8843/index.html
-3. Colar o prompt acima no Claude Code com o texto que a Katiuschia mandou
+| Método | Rota | Acesso |
+|---|---|---|
+| GET | `/api/servicos` | público |
+| GET | `/api/agenda/horarios?data=2026-10-05&servicos=a,b` | público |
+| POST | `/api/agendamentos` | público |
+| POST | `/api/auth/login` | público |
+| GET | `/api/admin/agendamentos?data=` | admin |
+| PATCH | `/api/admin/agendamentos/{id}` — `{ "status": "CONFIRMADO" }` | admin |
+| GET · POST · DELETE | `/api/admin/bloqueios` | admin |
+
+Documentação interativa: http://127.0.0.1:8000/docs
+
+---
+
+## Como rodar localmente
+
+```bash
+cd backend
+python -m venv .venv                          # só na primeira vez
+.venv\Scripts\activate                        # Windows (Linux/Mac: source .venv/bin/activate)
+pip install -r requirements-dev.txt           # só na primeira vez
+copy .env.example .env                        # só na primeira vez — ajustar senha e JWT_SECRET
+uvicorn app.main:app --reload
+```
+
+- Site: http://127.0.0.1:8000
+- Painel: http://127.0.0.1:8000/admin.html (e-mail/senha do `.env`)
+- Para zerar os dados de teste: parar o servidor e apagar `backend/kg.db`.

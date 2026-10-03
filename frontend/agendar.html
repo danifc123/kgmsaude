@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agendar horário · KG Espaço Saúde</title>
+<meta name="theme-color" content="#0c0c0d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-style='italic' fill='%23d4af37' text-anchor='middle'%3EKG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Work+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/agendar.css">
+</head>
+<body>
+
+<main class="wrap" id="etapa-agendamento">
+  <div class="topbar">
+    <a class="back" href="index.html" aria-label="Voltar aos serviços">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Agendar horário</h1>
+  </div>
+
+  <div class="eyebrow"><div class="line"></div><span>Seus serviços</span><div class="line"></div></div>
+  <section class="card" id="resumo"><p class="loading">Carregando…</p></section>
+
+  <div class="eyebrow"><div class="line"></div><span>Escolha o dia</span><div class="line"></div></div>
+  <section class="days" id="dias" aria-label="Dias disponíveis"></section>
+
+  <div class="eyebrow"><div class="line"></div><span>Horário</span><div class="line"></div></div>
+  <section id="horarios" aria-live="polite"></section>
+
+  <div class="eyebrow"><div class="line"></div><span>Seus dados</span><div class="line"></div></div>
+  <form id="form-dados" novalidate>
+    <label class="field">
+      <span>Nome completo</span>
+      <input name="nome" autocomplete="name" required minlength="2" maxlength="100">
+    </label>
+    <label class="field">
+      <span>WhatsApp</span>
+      <input name="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(99) 99999-9999" required minlength="10" maxlength="20">
+    </label>
+    <label class="field" id="campo-endereco" hidden>
+      <span>Endereço para o atendimento a domicílio</span>
+      <input name="endereco" autocomplete="street-address" maxlength="200">
+    </label>
+    <label class="field">
+      <span>Observação (opcional)</span>
+      <textarea name="observacao" maxlength="300" placeholder="Alguma alergia, preferência ou dúvida?"></textarea>
+    </label>
+  </form>
+
+  <p class="alert" id="erro" role="alert" hidden></p>
+</main>
+
+<main class="wrap" id="etapa-sucesso" hidden></main>
+
+<div class="cta-bar" id="cta-agendar">
+  <div class="inner">
+    <button type="button" class="btn btn-primary" id="confirmar" disabled>Escolha um horário</button>
+  </div>
+</div>
+
+<script type="module" src="js/agendar.js"></script>
+</body>
+</html>
