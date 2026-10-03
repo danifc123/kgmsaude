@@ -1,0 +1,109 @@
+/* Painel da Katiuschia: login, agenda e bloqueios. */
+
+.login{padding-top:12vh;}
+.login .brand{
+  text-align:center;
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-size:1.6rem;
+  color:var(--gold);
+  margin:0 0 4px;
+}
+.login .sub{text-align:center;color:var(--muted);font-size:0.82rem;margin:0 0 24px;}
+.login .btn{width:100%;}
+
+/* ---------- Abas ---------- */
+.tabs{
+  display:flex;
+  gap:6px;
+  padding:4px;
+  border:1px solid var(--hair);
+  border-radius:999px;
+  margin:12px 0 18px;
+}
+.tab{
+  flex:1;
+  padding:9px 0;
+  border:none;
+  border-radius:999px;
+  background:none;
+  font-size:0.84rem;
+  font-weight:600;
+  color:var(--muted);
+  cursor:pointer;
+}
+.tab[aria-selected="true"]{background:var(--gold);color:var(--gold-ink);}
+
+/* ---------- Navegação de dias ---------- */
+.day-nav{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.day-nav .label{
+  flex:1;
+  text-align:center;
+  font-family:'Fraunces',serif;
+  font-size:1.05rem;
+}
+.filters{display:flex;gap:8px;margin-bottom:16px;}
+.chip{
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid var(--hair);
+  background:none;
+  font-size:0.76rem;
+  color:var(--muted);
+  cursor:pointer;
+}
+.chip[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);}
+
+/* ---------- Agendamentos ---------- */
+.bookings{display:flex;flex-direction:column;gap:12px;}
+.booking-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.booking-time{font-variant-numeric:tabular-nums;font-weight:600;font-size:1.05rem;}
+.booking-date{font-size:0.72rem;color:var(--muted);}
+.booking-name{font-family:'Fraunces',serif;font-size:1.08rem;margin:8px 0 2px;}
+.booking-phone{font-size:0.84rem;color:var(--gold);}
+.booking-items{margin:10px 0 0;padding:0;list-style:none;font-size:0.84rem;color:var(--muted);}
+.booking-items li::before{content:"• ";color:var(--gold);}
+.booking-extra{margin-top:8px;font-size:0.8rem;line-height:1.45;}
+.booking-extra .label{color:var(--muted);}
+.booking-money{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid var(--hair);
+  font-size:0.84rem;
+  font-variant-numeric:tabular-nums;
+}
+.booking-money strong{color:var(--gold);}
+.booking-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.booking-actions .btn{flex:1 1 auto;}
+
+.status{
+  font-size:0.64rem;
+  font-weight:600;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  padding:4px 9px;
+  border-radius:999px;
+  border:1px solid currentColor;
+  white-space:nowrap;
+}
+.status-PENDENTE{color:var(--warn);}
+.status-CONFIRMADO{color:var(--ok);}
+.status-CONCLUIDO{color:var(--muted);}
+.status-CANCELADO{color:var(--danger);}
+.card.is-closed{opacity:0.6;}
+
+/* ---------- Bloqueios ---------- */
+.row{display:flex;gap:10px;}
+.row .field{flex:1;}
+.check{display:flex;align-items:center;gap:8px;font-size:0.86rem;margin-bottom:14px;cursor:pointer;}
+.check input{width:18px;height:18px;accent-color:var(--gold);}
+.blocks{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+.block{display:flex;align-items:center;gap:12px;}
+.block-info{flex:1;min-width:0;}
+.block-when{font-size:0.88rem;}
+.block-reason{font-size:0.78rem;color:var(--muted);margin-top:2px;}
+.day-nav .label::first-letter,
+.booking-date::first-letter,
+.block-when::first-letter{text-transform:uppercase;}
