@@ -1,0 +1,199 @@
+/* Página inicial: apresentação, galeria, catálogo e contato. */
+
+/* ---------- Hero ---------- */
+.hero{
+  padding-top:44px;
+  padding-bottom:28px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+}
+.mark{width:min(78%, 300px);margin-bottom:-6px;}
+.mark img{display:block;width:100%;height:auto;}
+.mark-sub{
+  font-size:0.68rem;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.owner{
+  margin-top:6px;
+  font-family:'Fraunces',serif;
+  font-size:1.15rem;
+  font-weight:500;
+}
+.role{
+  font-size:0.82rem;
+  color:var(--muted);
+  max-width:34ch;
+  line-height:1.5;
+  margin:0;
+}
+.quick-links{display:flex;gap:10px;margin-top:8px;}
+.icon-btn{
+  width:42px;height:42px;
+  border:1px solid var(--hair);
+  border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);
+  transition:transform .15s ease;
+}
+.icon-btn:active{transform:scale(0.94);}
+.icon-btn svg{width:18px;height:18px;}
+
+/* ---------- Quem sou eu ---------- */
+.about-card{
+  background:#111010;
+  border:1px solid var(--hair);
+  border-radius:20px;
+  overflow:hidden;
+}
+.about-title{
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-weight:600;
+  font-size:1.55rem;
+  color:var(--gold);
+  text-align:center;
+  margin:0;
+  padding:24px 16px 18px;
+}
+.about-photo img{display:block;width:100%;height:auto;}
+
+/* ---------- Galeria ---------- */
+.gallery{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  margin-inline:-20px;
+  padding:2px 20px 6px;
+}
+.gallery::-webkit-scrollbar{display:none;}
+.gallery-item{
+  flex:0 0 auto;
+  width:66%;
+  max-width:260px;
+  aspect-ratio:4/5;
+  border-radius:16px;
+  overflow:hidden;
+  scroll-snap-align:center;
+  border:1px solid var(--hair);
+  background:var(--panel-2);
+}
+.gallery-item.gallery-item-wide{width:86%;max-width:340px;aspect-ratio:4/3;}
+.gallery-item img{
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center top;
+  display:block;
+}
+
+/* ---------- Catálogo ---------- */
+.menu-group{margin-bottom:6px;}
+.service{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 0;
+  border-bottom:1px solid var(--hair);
+  cursor:pointer;
+  user-select:none;
+  border-radius:10px;
+  transition:background .15s ease;
+}
+.service:last-child{border-bottom:none;}
+.service:active{background:rgba(212,175,55,0.06);}
+.service.selected{background:rgba(212,175,55,0.08);}
+.svc-check{
+  flex:0 0 auto;
+  width:20px;height:20px;
+  border-radius:999px;
+  border:1.5px solid var(--hair);
+  position:relative;
+  transition:background .15s ease, border-color .15s ease;
+}
+.service.selected .svc-check{background:var(--gold);border-color:var(--gold);}
+.service.selected .svc-check::after{
+  content:"";
+  position:absolute;
+  left:6px;top:3px;
+  width:5px;height:9px;
+  border:solid var(--gold-ink);
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
+.svc-info{flex:1;}
+.svc-name{font-family:'Fraunces',serif;font-weight:500;font-size:1.02rem;}
+.svc-dur{
+  display:block;
+  margin-top:4px;
+  font-size:0.68rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.svc-price{
+  font-variant-numeric:tabular-nums;
+  font-weight:600;
+  color:var(--gold);
+  white-space:nowrap;
+}
+
+/* ---------- Onde estamos ---------- */
+.info-card{
+  background:var(--panel);
+  border:1px solid var(--hair);
+  border-radius:16px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.info-row{display:flex;gap:12px;align-items:flex-start;}
+.info-row svg{width:18px;height:18px;flex-shrink:0;margin-top:2px;color:var(--gold);}
+.info-row .label{
+  font-size:0.65rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:2px;
+}
+.info-row .value{font-size:0.92rem;line-height:1.4;}
+.info-row a.value:hover{color:var(--gold);}
+
+.note{
+  margin-top:26px;
+  font-size:0.78rem;
+  color:var(--muted);
+  text-align:center;
+  line-height:1.6;
+  padding:0 8px;
+}
+.note strong{color:var(--gold);font-weight:600;}
+
+footer{
+  margin-top:34px;
+  text-align:center;
+  font-size:0.68rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  opacity:0.7;
+}
+
+/* ---------- Carrinho na barra fixa ---------- */
+.cart-info{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;}
+.cart-count{font-size:0.68rem;letter-spacing:0.03em;color:var(--muted);}
+.cart-total{
+  font-size:1.05rem;
+  font-weight:700;
+  color:var(--gold);
+  font-variant-numeric:tabular-nums;
+}
+#cart-continue{flex:0 0 auto;padding-inline:22px;}
+.btn-icon{flex:0 0 46px;}

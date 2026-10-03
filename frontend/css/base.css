@@ -1,0 +1,217 @@
+/* Tokens, reset e peças compartilhadas entre as páginas. */
+:root{
+  --ink:#0c0c0d;
+  --panel:#171515;
+  --panel-2:#1e1b1b;
+  --gold:#d4af37;
+  --gold-deep:#a6842a;
+  --gold-ink:#1c1508;
+  --paper:#f4eee1;
+  --muted:#a99d87;
+  --hair:rgba(212,175,55,0.24);
+  --ok:#8fce9b;
+  --warn:#e8b45c;
+  --danger:#e07a6c;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'Work Sans',ui-sans-serif,system-ui,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+img{max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;color:inherit;}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+[hidden]{display:none !important;}
+
+.wrap{
+  max-width:480px;
+  margin:0 auto;
+  padding-inline:20px;
+  padding-bottom:110px;
+}
+
+/* ---------- Títulos de seção ---------- */
+.eyebrow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:38px 0 16px;
+}
+.eyebrow .line{flex:1;height:1px;background:var(--hair);}
+.eyebrow span{
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-size:1.35rem;
+  color:var(--gold);
+  white-space:nowrap;
+}
+
+/* ---------- Topo das páginas internas ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:22px 0 6px;
+}
+.topbar h1{
+  margin:0;
+  flex:1;
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:1.45rem;
+  color:var(--gold);
+}
+.back{
+  width:38px;height:38px;
+  flex:0 0 auto;
+  border:1px solid var(--hair);
+  border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);
+  background:none;
+  cursor:pointer;
+}
+.back svg{width:18px;height:18px;}
+
+/* ---------- Cartões ---------- */
+.card{
+  background:var(--panel);
+  border:1px solid var(--hair);
+  border-radius:16px;
+  padding:18px;
+}
+
+/* ---------- Botões ---------- */
+.btn{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:13px 16px;
+  border-radius:999px;
+  border:none;
+  font-size:0.86rem;
+  font-weight:600;
+  letter-spacing:0.01em;
+  cursor:pointer;
+}
+.btn svg{width:16px;height:16px;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;}
+.btn-primary{background:var(--gold);color:var(--gold-ink);}
+.btn-primary:not(:disabled):active{background:var(--gold-deep);}
+.btn-ghost{
+  border:1px solid var(--hair);
+  color:var(--paper);
+  background:rgba(255,255,255,0.02);
+}
+.btn-danger{
+  border:1px solid rgba(224,122,108,0.45);
+  color:var(--danger);
+  background:none;
+}
+.btn-sm{flex:0 0 auto;padding:9px 14px;font-size:0.78rem;}
+
+/* ---------- Formulário ---------- */
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:0.78rem;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+.field input,
+.field textarea{
+  font:inherit;
+  font-size:0.95rem;
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid var(--hair);
+  background:var(--panel-2);
+  color:var(--paper);
+  width:100%;
+}
+.field textarea{resize:vertical;min-height:70px;}
+.field input:focus,
+.field textarea:focus{outline:2px solid var(--gold);outline-offset:1px;}
+.field input::-webkit-calendar-picker-indicator{filter:invert(0.8);}
+
+/* ---------- Barra fixa de ação ---------- */
+.cta-bar{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  padding:12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  background:linear-gradient(180deg, rgba(12,12,13,0) 0%, var(--ink) 32%);
+  display:flex;
+  justify-content:center;
+  z-index:10;
+}
+.cta-bar .inner{
+  width:100%;
+  max-width:480px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+/* ---------- Mensagens ---------- */
+.alert{
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:0.85rem;
+  line-height:1.45;
+  border:1px solid rgba(224,122,108,0.45);
+  background:rgba(224,122,108,0.08);
+  color:#f2b8ae;
+  margin:14px 0;
+}
+.empty{
+  text-align:center;
+  color:var(--muted);
+  font-size:0.86rem;
+  padding:22px 8px;
+}
+.loading{
+  text-align:center;
+  color:var(--muted);
+  font-size:0.82rem;
+  padding:18px 0;
+}
+
+/* ---------- Pix ---------- */
+.pix-key-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--panel-2);
+  border:1px solid var(--hair);
+  border-radius:12px;
+  padding:10px 10px 10px 14px;
+}
+.pix-key{
+  flex:1;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:0.92rem;
+  letter-spacing:0.02em;
+  color:var(--gold);
+  overflow-x:auto;
+  white-space:nowrap;
+}
+.pix-copy{
+  flex:0 0 auto;
+  font-size:0.76rem;
+  font-weight:600;
+  padding:9px 14px;
+  border-radius:999px;
+  border:none;
+  background:var(--gold);
+  color:var(--gold-ink);
+  cursor:pointer;
+}
+.pix-copy.copied{background:var(--ok);}
