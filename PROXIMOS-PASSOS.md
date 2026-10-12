@@ -2,104 +2,138 @@
 
 ## Onde estamos
 
-- **`master`** (tag `v1.0.0`) — versão no ar hoje: página de link na bio,
-  carrinho → WhatsApp com a chave Pix para o sinal.
-- **`dev`** — **sistema de agendamento (fase 1) pronto e funcionando localmente.**
-  Falta só publicar (ver [Deploy](#deploy)).
+- **`master`** (tag `v1.0.0`) — versão no ar hoje: link na bio, carrinho → WhatsApp.
+- **`dev`** — **sistema completo, pronto para publicar**: agendamento online,
+  checkout Pix com Mercado Pago e painel da Katiuschia. Testado localmente com o
+  Pix simulado.
 
-### O que a fase 1 entrega
+**O código está pronto. O que falta depende de contas e respostas dela:**
 
-**Cliente** (`/` → `/agendar.html`)
-
-1. Escolhe os serviços na página inicial (catálogo vem da API).
-2. Escolhe o dia (próximos 30) e um horário livre — a grade já desconta
-   agendamentos, folgas e a antecedência mínima, e considera a duração somada
-   dos serviços.
-3. Informa nome, WhatsApp (e endereço, se for massagem a domicílio).
-4. Recebe o código do agendamento (ex: `KG-7F3A`), o valor do sinal de 50% com a
-   chave Pix para copiar e um botão para mandar o comprovante no WhatsApp com
-   a mensagem pronta.
-
-O horário fica **reservado como "Aguardando sinal"** — ninguém mais consegue
-marcar por cima.
-
-**Katiuschia** (`/admin.html`, login com e-mail e senha)
-
-- Agenda por dia, "Todos os próximos" e filtro "Só pendentes".
-- Botões: **Confirmar sinal** → **Concluir**, ou **Cancelar** (libera o horário).
-- Link direto para o WhatsApp de cada cliente.
-- **Folgas e bloqueios**: dia inteiro ou faixa de horário, com motivo.
-
-> A conferência do Pix continua manual: ela vê o comprovante no WhatsApp e
-> toca em "Confirmar sinal". O checkout automático fica para a fase 2.
+1. [Respostas da Katiuschia](#1-respostas-da-katiuschia) (horários, durações, WhatsApp…)
+2. [Credenciais do Mercado Pago](#2-mercado-pago) da conta dela
+3. [Deploy](#3-deploy) (Neon + Render) e um Pix real de teste
+4. Merge na `master` + tag `v2.0.0` + trocar o link da bio
 
 ---
 
-## Decisões pendentes com a Katiuschia
+## Como funciona
 
-Valores provisórios já estão no sistema — só ajustar quando ela responder.
+### Cliente (`/` → `/agendar.html`)
 
-| Pergunta | Hoje no sistema | Onde mudar |
+1. Escolhe os serviços (catálogo vem da API).
+2. Escolhe o dia e um horário livre — a grade desconta agendamentos, folgas e a
+   antecedência mínima, e considera a duração somada dos serviços.
+3. Informa nome, WhatsApp, e-mail (exigido pelo Mercado Pago para o Pix) e
+   endereço, se for massagem a domicílio.
+4. **Checkout**: QR code + Pix copia e cola do sinal (50%), com contagem
+   regressiva. O horário fica segurado por 30 min.
+5. Quando o Pix cai, a tela vira **"Agendamento confirmado!"** sozinha.
+   Se o prazo acabar, o horário é liberado e ela pode escolher outro.
+
+O link do checkout (`agendar.html?agendamento=…`) pode ser recarregado sem perder o QR.
+
+### Katiuschia (`/admin.html`)
+
+- Agenda por dia, "Todos os próximos" e "Só pendentes".
+- Cada cartão mostra a situação do Pix (aguardando até hh:mm / pago em …).
+- **Confirmar sinal** (manual, se ela receber por fora) → **Concluir**, ou **Cancelar**.
+- **Aviso de devolução**: se o Pix caiu depois que o horário já foi ocupado, ou
+  se ela cancelou um agendamento pago, o cartão pede para devolver o sinal.
+- Folgas e bloqueios (dia inteiro ou faixa de horário).
+
+### Regras do pagamento
+
+| Situação | O que acontece |
+|---|---|
+| Pix pago dentro do prazo | Agendamento → **CONFIRMADO** |
+| Prazo de 30 min venceu sem pagamento | → **EXPIRADO**, horário liberado |
+| Pix pago depois do prazo, horário ainda livre | → **CONFIRMADO** normalmente |
+| Pix pago depois do prazo, horário já ocupado | Fica **EXPIRADO** + aviso de devolução no painel |
+| Aviso do Mercado Pago repetido | Ignorado (idempotente) |
+| Valor pago menor que o sinal | Não confirma; fica registrado no log |
+
+A confirmação chega por dois caminhos: o **webhook** do Mercado Pago e a própria
+tela de checkout, que consulta o status a cada 4 s (e a API pergunta ao Mercado
+Pago). Um cobre o outro.
+
+### Modos de cobrança (`PAGAMENTO_PROVEDOR`)
+
+| Valor | Uso |
+|---|---|
+| `fake` | Desenvolvimento. Pix simulado + botão "Simular pagamento". Bloqueado em produção. |
+| `mercado_pago` | Produção. Pix real com confirmação automática. |
+| `manual` | Plano B: chave Pix fixa + comprovante no WhatsApp, ela confirma no painel. |
+
+---
+
+## 1. Respostas da Katiuschia
+
+Valores provisórios já estão no sistema.
+
+| Pergunta | Hoje | Onde mudar |
 |---|---|---|
 | Duração da limpeza de pele e da massagem terapêutica | 60 min | `backend/app/seed.py` |
-| Dias e horários de atendimento | seg–sex 9h–18h, sáb 9h–13h | `backend/app/seed.py` (`EXPEDIENTE`) |
-| Antecedência mínima para agendar | 2h | `.env` → `ANTECEDENCIA_MINIMA_MINUTOS` |
-| Até quantos dias à frente | 30 | `.env` → `DIAS_MAXIMOS_AGENDAMENTO` |
-| Número do WhatsApp | `5522999879500` (o texto da página mostra `+55 99 98821-6488` — **conferir qual é o certo**) | `frontend/js/config.js` |
-| Chave Pix | `63226867393` | `frontend/js/config.js` |
-| Texto da mensagem do comprovante | genérico | `frontend/js/agendar.js` → `montarMensagemComprovante` |
-| Política de cancelamento / devolução do sinal | não definida | — |
+| Dias e horários de atendimento (tem almoço?) | seg–sex 9h–18h, sáb 9h–13h | `backend/app/seed.py` → `EXPEDIENTE` (um dia pode ter várias faixas) |
+| Antecedência mínima | 2h | env `ANTECEDENCIA_MINIMA_MINUTOS` |
+| Até quantos dias à frente | 30 | env `DIAS_MAXIMOS_AGENDAMENTO` |
+| Prazo para pagar o Pix | 30 min | env `PAGAMENTO_EXPIRA_MINUTOS` |
+| **Número do WhatsApp** — o código usa `5522999879500`, a página mostra `+55 99 98821-6488` | — | `frontend/js/config.js` e `frontend/index.html` |
+| Política de cancelamento / devolução do sinal | não definida | texto na tela de confirmação, se ela quiser |
 
-O seed só insere dados quando a tabela está vazia. Depois do deploy, mudanças
-de expediente/serviço são feitas direto no banco (ou numa tela futura do painel).
+> O seed só insere quando a tabela está vazia. Ajuste o `seed.py` **antes** do
+> primeiro deploy; depois disso, mudanças vão direto no banco.
+
+## 2. Mercado Pago
+
+Na conta **dela** (a que vai receber):
+
+1. Entrar em <https://www.mercadopago.com.br/developers/panel/app> → **Criar aplicação**
+   (tipo "Pagamentos online", integração via "Checkout Transparente / API").
+2. **Credenciais de produção** → copiar o **Access Token** (`APP_USR-…`) →
+   variável `MERCADO_PAGO_ACCESS_TOKEN`.
+3. A conta precisa ter uma **chave Pix cadastrada** no Mercado Pago, senão a API
+   não gera o QR code.
+4. Depois do deploy: **Webhooks → Configurar notificações** → URL
+   `https://<dominio>/api/pagamentos/webhook`, evento **Pagamentos** → salvar e copiar a
+   **assinatura secreta** → variável `MERCADO_PAGO_WEBHOOK_SECRET`.
+
+> O ambiente de testes do Mercado Pago não permite pagar um Pix de verdade. O
+> teste final é um agendamento real com sinal pequeno (ex.: criar um serviço de
+> R$ 2 temporário) e conferir a confirmação automática.
+
+## 3. Deploy
+
+Uma única aplicação: a API serve `/api/*` e o site (`frontend/`). Arquivos prontos:
+`Dockerfile` (raiz) e `render.yaml`.
+
+1. **Banco** — criar um Postgres gratuito no [Neon](https://neon.tech) e copiar a
+   connection string (pode colar como `postgresql://…`; a API ajusta o driver).
+2. **Render** — New → **Blueprint** → este repositório (branch `master` depois do
+   merge). Preencher as variáveis pedidas:
+   `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (forte, entregar a ela em mãos),
+   `MERCADO_PAGO_ACCESS_TOKEN`, `URL_PUBLICA` (`https://…onrender.com`),
+   `CORS_ORIGINS` (`["https://…onrender.com"]`). `JWT_SECRET` é gerado sozinho.
+3. Configurar o webhook (passo 2.4) e adicionar `MERCADO_PAGO_WEBHOOK_SECRET`.
+4. Teste ponta a ponta com Pix real; no painel, conferir "Pix pago em…".
+5. Instagram: trocar o link da bio.
+6. Git: `backup/master-AAAA-MM-DD` → merge `dev` → `master` → tag **`v2.0.0`**.
+
+> Plano gratuito do Render "dorme" após 15 min sem acesso (a primeira visita
+> demora ~30 s). Se incomodar, o plano Starter resolve.
+> A API sobe com erro de propósito se estiver em produção com `PAGAMENTO_PROVEDOR=fake`
+> ou sem o token do Mercado Pago.
 
 ---
-
-## Deploy
-
-Uma única aplicação: a API FastAPI serve `/api/*` e também os arquivos do
-`frontend/`. Por isso não há CORS nem duas hospedagens.
-
-1. **Banco**: criar um Postgres gratuito no [Neon](https://neon.tech) e copiar a
-   connection string (`postgresql+psycopg://…`).
-2. **API + site**: criar um Web Service no [Render](https://render.com) a partir
-   do repositório.
-   - Root directory: raiz do repo · Runtime: Python
-   - Build: `pip install -r backend/requirements.txt`
-   - Start: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - Variáveis: `ENVIRONMENT=production`, `DATABASE_URL`, `JWT_SECRET` (gerar um
-     novo), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (senha forte, passar pra ela em mãos),
-     `CORS_ORIGINS=["https://<dominio>"]`
-3. Abrir o site, fazer um agendamento de teste, confirmar e cancelar no painel.
-4. Trocar o link da bio do Instagram para o novo endereço.
-5. Backup da `master` → merge `dev` → `master` → tag **`v2.0.0`**.
-
-> O `backend/Dockerfile` copia só `app/`; se preferir deploy por Docker,
-> ajustar para copiar também o `frontend/`.
-
----
-
-## Fase 2 — checkout Pix automático (quando ela quiser)
-
-Trocar a conferência manual por uma cobrança Pix dinâmica (Mercado Pago):
-cada agendamento gera um QR code próprio e o webhook confirma sozinho.
-
-- [ ] Conta Mercado Pago dela + credenciais de teste
-- [ ] `app/gateways/` com `PaymentGateway` (interface) e `MercadoPagoGateway`
-- [ ] Tabela `pagamentos` (id do provedor único, valor, status, copia e cola, QR)
-- [ ] `POST /api/agendamentos` passa a devolver o QR code; reserva expira em 30 min sem pagamento
-- [ ] `POST /api/pagamentos/webhook`: valida `x-signature`, consulta o pagamento na API, confirma (idempotente)
-- [ ] Tela de checkout com QR + copia e cola + polling do status
-- [ ] Rate limit no `POST /api/agendamentos`
 
 ## Ideias para depois
 
 - Tela no painel para editar preços, durações e expediente.
 - Lembrete automático no WhatsApp na véspera.
-- Testes automatizados (unit + integração + E2E) — a estrutura `backend/tests/`
-  já existe; prioridade para `gerar_horarios_livres` e `calcular_sinal`.
-- Migrations com Alembic quando o banco de produção tiver dados que não podem
-  ser recriados (hoje as tabelas são criadas com `create_all` na subida).
+- Estorno do sinal pelo painel (API de reembolso do Mercado Pago).
+- Testes automatizados — prioridade: `gerar_horarios_livres`, `calcular_sinal`,
+  `PagamentoService._aplicar` e a assinatura do webhook.
+- Alembic quando o banco de produção tiver dados (hoje: `create_all` na subida —
+  **coluna nova em tabela existente não é criada sozinha**).
 
 ---
 
@@ -107,24 +141,20 @@ cada agendamento gera um QR code próprio e o webhook confirma sozinho.
 
 ```
 backend/app/
-├── main.py            # create_app: CORS, handlers, routers em /api, frontend em /
-├── config.py          # Settings (.env)
-├── database.py        # engine, SessionLocal, Base
-├── dependencies.py    # get_db, services, get_current_admin (JWT)
-├── exceptions.py      # AppError → 401/404/409/422
-├── clock.py           # agora no fuso do espaço
-├── seed.py            # serviços, expediente e admin iniciais
-├── models/            # Servico, HorarioFuncionamento, Bloqueio, Agendamento(+Item), Usuario
+├── main.py            # create_app: valida config, routers em /api, site em /
+├── config.py          # Settings (.env) + ProvedorPagamento
+├── database.py · dependencies.py · exceptions.py · clock.py · rate_limit.py · seed.py
+├── models/            # Servico, HorarioFuncionamento, Bloqueio, Agendamento(+Item), Pagamento, Usuario
 ├── schemas/           # Pydantic (snake_case ↔ camelCase)
 ├── repositories/      # acesso a dados
-├── services/          # catálogo, agenda, agendamento, auth
-└── routers/           # health, servicos, agenda, agendamentos, auth, admin
+├── services/          # catálogo, agenda, agendamento, pagamento, auth
+├── gateways/          # PaymentGateway (interface), MercadoPagoGateway, FakeGateway
+└── routers/           # health, servicos, agenda, agendamentos, pagamentos, auth, admin
 
 frontend/
 ├── index.html · agendar.html · admin.html
 ├── css/   base.css + um por página
-├── js/    api, carrinho, config, dom, formatadores + um por página (ES modules)
-└── assets/
+└── js/    api, carrinho, config, dom, formatadores + um por página (ES modules)
 ```
 
 ### API
@@ -133,7 +163,11 @@ frontend/
 |---|---|---|
 | GET | `/api/servicos` | público |
 | GET | `/api/agenda/horarios?data=2026-10-05&servicos=a,b` | público |
-| POST | `/api/agendamentos` | público |
+| POST | `/api/agendamentos` — devolve o Pix | público (10 por IP a cada 10 min) |
+| GET | `/api/agendamentos/{id}` — status para o checkout | público (id é UUID) |
+| GET | `/api/pagamentos/config` | público |
+| POST | `/api/pagamentos/webhook` | assinatura do Mercado Pago |
+| POST | `/api/dev/pagamentos/{id}/aprovar` | só com `PAGAMENTO_PROVEDOR=fake` |
 | POST | `/api/auth/login` | público |
 | GET | `/api/admin/agendamentos?data=` | admin |
 | PATCH | `/api/admin/agendamentos/{id}` — `{ "status": "CONFIRMADO" }` | admin |
@@ -154,6 +188,7 @@ copy .env.example .env                        # só na primeira vez — ajustar 
 uvicorn app.main:app --reload
 ```
 
-- Site: http://127.0.0.1:8000
+- Site: http://127.0.0.1:8000 (Pix simulado — use "Simular pagamento" no checkout)
 - Painel: http://127.0.0.1:8000/admin.html (e-mail/senha do `.env`)
-- Para zerar os dados de teste: parar o servidor e apagar `backend/kg.db`.
+- Zerar os dados: parar o servidor e apagar `backend/kg.db` (necessário também
+  depois de mudanças nos models).
