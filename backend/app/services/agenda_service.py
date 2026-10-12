@@ -58,7 +58,8 @@ class AgendaService:
             (h.abre_as, h.fecha_as) for h in self.agenda.listar_horarios_do_dia(data.weekday())
         ]
         ocupados = [
-            (a.inicio, a.fim) for a in self.agendamentos.listar_ocupando_entre(inicio_dia, fim_dia)
+            (a.inicio, a.fim)
+            for a in self.agendamentos.listar_ocupando_entre(inicio_dia, fim_dia, self.agora())
         ]
         ocupados += [
             (b.inicio, b.fim) for b in self.agenda.listar_bloqueios_entre(inicio_dia, fim_dia)
@@ -75,7 +76,17 @@ class AgendaService:
         )
 
     def horario_esta_livre(self, inicio: datetime, duracao_minutos: int) -> bool:
+        """Se o horário aparece na grade de livres (expediente, antecedência e ocupação)."""
         return inicio in self.calcular_horarios_livres(inicio.date(), duracao_minutos)
+
+    def intervalo_sem_conflito(self, agendamento_id: str, inicio: datetime, fim: datetime) -> bool:
+        """
+        Se [inicio, fim) não colide com outro agendamento nem com bloqueio. Usado ao
+        confirmar um pagamento atrasado: o horário já foi validado na reserva, só
+        importa se alguém ocupou depois.
+        """
+        outros = self.agendamentos.listar_ocupando_entre(inicio, fim, self.agora(), agendamento_id)
+        return not outros and not self.agenda.listar_bloqueios_entre(inicio, fim)
 
     def _validar_data(self, data: date) -> None:
         dias = self.settings.dias_maximos_agendamento
