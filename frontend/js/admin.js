@@ -15,6 +15,7 @@ const CHAVE_TOKEN = "kg-admin-token";
 const ACOES_POR_STATUS = {
   CANCELADO: [],
   CONCLUIDO: [],
+  EXPIRADO: [],
   CONFIRMADO: [
     { classe: "btn-primary", rotulo: "Concluir", status: "CONCLUIDO" },
     { classe: "btn-danger", confirmar: "Cancelar este agendamento?", rotulo: "Cancelar", status: "CANCELADO" },
@@ -29,8 +30,11 @@ const ROTULO_STATUS = {
   CANCELADO: "Cancelado",
   CONCLUIDO: "Concluído",
   CONFIRMADO: "Confirmado",
+  EXPIRADO: "Expirado",
   PENDENTE: "Aguardando sinal",
 };
+
+const STATUS_FECHADOS = ["CANCELADO", "CONCLUIDO", "EXPIRADO"];
 
 const estado = {
   data: dataIso(new Date()),
@@ -150,7 +154,7 @@ async function carregarAgendamentos() {
 }
 
 function criarCartaoAgendamento(agendamento) {
-  const fechado = agendamento.status === "CANCELADO" || agendamento.status === "CONCLUIDO";
+  const fechado = STATUS_FECHADOS.includes(agendamento.status);
   const saudacao = `Olá, ${agendamento.clienteNome.split(" ")[0]}! Aqui é a Katiuschia, sobre seu agendamento ${agendamento.codigo}.`;
 
   return el(
@@ -182,6 +186,7 @@ function criarCartaoAgendamento(agendamento) {
       el("span", {}, "Total ", el("strong", {}, formatarMoeda(agendamento.totalCentavos))),
       el("span", {}, "Sinal ", el("strong", {}, formatarMoeda(agendamento.sinalCentavos))),
     ),
+    criarSituacaoPix(agendamento),
     el(
       "div",
       { class: "booking-actions" },
@@ -194,6 +199,26 @@ function criarCartaoAgendamento(agendamento) {
       ),
     ),
   );
+}
+
+// Linha com a situação do Pix automático; avisa quando o sinal foi pago mas o horário não vale mais.
+function criarSituacaoPix(agendamento) {
+  const pix = agendamento.pagamento;
+  if (!pix) return null;
+
+  if (pix.status === "APROVADO" && STATUS_FECHADOS.includes(agendamento.status) && agendamento.status !== "CONCLUIDO") {
+    return el(
+      "p",
+      { class: "booking-pix warn" },
+      `Sinal pago via Pix (${formatarMoeda(pix.valorCentavos)}), mas o agendamento está ${ROTULO_STATUS[agendamento.status].toLowerCase()}. Devolva o valor pelo app do Mercado Pago.`,
+    );
+  }
+  const textos = {
+    APROVADO: () => `Pix pago em ${formatarDataLonga(pix.pagoEm)} às ${formatarHora(pix.pagoEm)}`,
+    CANCELADO: () => "Pix não foi pago",
+    PENDENTE: () => `Pix aguardando pagamento até ${formatarHora(pix.expiraEm)}`,
+  };
+  return el("p", { class: `booking-pix pix-${pix.status}` }, textos[pix.status]());
 }
 
 function criarExtra(rotulo, texto) {
