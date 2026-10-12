@@ -41,6 +41,10 @@
       <span>WhatsApp</span>
       <input name="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(99) 99999-9999" required minlength="10" maxlength="20">
     </label>
+    <label class="field" id="campo-email" hidden>
+      <span>E-mail (para o comprovante do Pix)</span>
+      <input name="email" type="email" inputmode="email" autocomplete="email" maxlength="120">
+    </label>
     <label class="field" id="campo-endereco" hidden>
       <span>Endereço para o atendimento a domicílio</span>
       <input name="endereco" autocomplete="street-address" maxlength="200">
@@ -54,7 +58,7 @@
   <p class="alert" id="erro" role="alert" hidden></p>
 </main>
 
-<main class="wrap" id="etapa-sucesso" hidden></main>
+<main class="wrap" id="etapa-resultado" hidden></main>
 
 <div class="cta-bar" id="cta-agendar">
   <div class="inner">

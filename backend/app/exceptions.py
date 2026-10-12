@@ -16,6 +16,16 @@ class ConflitoError(AppError):
     status_code = 409
 
 
+class GatewayError(AppError):
+    """Falha ao falar com o provedor de pagamento."""
+
+    status_code = 502
+
+
+class MuitasRequisicoesError(AppError):
+    status_code = 429
+
+
 class NaoAutorizadoError(AppError):
     status_code = 401
 

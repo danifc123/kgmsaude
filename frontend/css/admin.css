@@ -107,3 +107,17 @@
 .day-nav .label::first-letter,
 .booking-date::first-letter,
 .block-when::first-letter{text-transform:uppercase;}
+
+/* ---------- Situação do Pix ---------- */
+.status-EXPIRADO{color:var(--muted);border-style:dashed;}
+.booking-pix{margin:8px 0 0;font-size:0.78rem;color:var(--muted);}
+.booking-pix.pix-APROVADO{color:var(--ok);}
+.booking-pix.warn{
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(232,180,92,0.45);
+  background:rgba(232,180,92,0.08);
+  color:var(--warn);
+  line-height:1.45;
+}
+.card.is-closed:has(.booking-pix.warn){opacity:1;}

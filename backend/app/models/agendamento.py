@@ -1,11 +1,15 @@
 import uuid
 from datetime import datetime
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.pagamento import Pagamento
 
 
 class StatusAgendamento(StrEnum):
@@ -13,17 +17,21 @@ class StatusAgendamento(StrEnum):
     CONFIRMADO = "CONFIRMADO"
     CONCLUIDO = "CONCLUIDO"
     CANCELADO = "CANCELADO"
+    EXPIRADO = "EXPIRADO"  # o Pix não foi pago dentro do prazo e o horário foi liberado
 
 
 class Agendamento(Base):
     __tablename__ = "agendamentos"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    cliente_email: Mapped[str | None] = mapped_column(String(120))
     cliente_nome: Mapped[str] = mapped_column(String(100))
     cliente_telefone: Mapped[str] = mapped_column(String(20))
     codigo: Mapped[str] = mapped_column(String(10), unique=True)
     criado_em: Mapped[datetime]
     endereco: Mapped[str | None] = mapped_column(String(200))
+    # Até quando o horário fica segurado esperando o Pix. None = sem prazo (modo manual).
+    expira_em: Mapped[datetime | None]
     fim: Mapped[datetime]
     inicio: Mapped[datetime] = mapped_column(index=True)
     observacao: Mapped[str | None] = mapped_column(String(300))
@@ -34,6 +42,9 @@ class Agendamento(Base):
     total_centavos: Mapped[int]
 
     itens: Mapped[list["AgendamentoItem"]] = relationship(
+        back_populates="agendamento", cascade="all, delete-orphan", lazy="selectin"
+    )
+    pagamento: Mapped["Pagamento | None"] = relationship(
         back_populates="agendamento", cascade="all, delete-orphan", lazy="selectin"
     )
 
