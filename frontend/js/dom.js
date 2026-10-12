@@ -17,6 +17,20 @@ export function el(tag, atributos = {}, ...filhos) {
   return elemento;
 }
 
+// Ícone SVG de traço a partir de um path.
+export function icone(d) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", d);
+  svg.append(path);
+  return svg;
+}
+
 // Copia o texto e dá feedback no próprio botão.
 export async function copiarTexto(texto, botao) {
   const original = botao.textContent;
