@@ -1,9 +1,19 @@
+from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+
+
+class ProvedorPagamento(StrEnum):
+    """Como o sinal é cobrado."""
+
+    FAKE = "fake"  # Pix simulado, para desenvolvimento sem credenciais
+    MANUAL = "manual"  # chave Pix fixa + comprovante no WhatsApp, confirmado no painel
+    MERCADO_PAGO = "mercado_pago"  # Pix dinâmico com confirmação automática
 
 
 class Settings(BaseSettings):
@@ -21,8 +31,26 @@ class Settings(BaseSettings):
     intervalo_grade_minutos: int = 30
     jwt_expira_minutos: int = 60 * 12
     jwt_secret: str = "dev-secret-troque-em-producao"
+    mercado_pago_access_token: str = ""
+    mercado_pago_webhook_secret: str = ""
+    pagamento_expira_minutos: int = 30
+    pagamento_provedor: ProvedorPagamento = ProvedorPagamento.FAKE
     sinal_percentual: int = 50
     timezone: str = "America/Fortaleza"
+    url_publica: str = ""  # ex: https://kgsaude.onrender.com — usada no webhook
+
+    @field_validator("database_url")
+    @classmethod
+    def _usar_driver_psycopg(cls, valor: str) -> str:
+        """Neon/Render entregam postgres:// — o SQLAlchemy precisa do driver explícito."""
+        for prefixo in ("postgres://", "postgresql://"):
+            if valor.startswith(prefixo):
+                return "postgresql+psycopg://" + valor.removeprefix(prefixo)
+        return valor
+
+    @property
+    def cobra_pix_automatico(self) -> bool:
+        return self.pagamento_provedor != ProvedorPagamento.MANUAL
 
 
 @lru_cache
