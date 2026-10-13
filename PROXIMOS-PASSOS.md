@@ -9,7 +9,8 @@
 
 **O código está pronto. O que falta depende de contas e respostas dela:**
 
-1. [Respostas da Katiuschia](#1-respostas-da-katiuschia) (horários, durações, WhatsApp…)
+1. [Respostas da Katiuschia](#1-respostas-da-katiuschia) — ✅ quase tudo respondido em 12/10;
+   faltam o e-mail do painel e a política de cancelamento
 2. [Credenciais do Mercado Pago](#2-mercado-pago) da conta dela
 3. [Deploy](#3-deploy) (Neon + Render) e um Pix real de teste
 4. Merge na `master` + tag `v2.0.0` + trocar o link da bio
@@ -68,17 +69,25 @@ Pago). Um cobre o outro.
 
 ## 1. Respostas da Katiuschia
 
-Valores provisórios já estão no sistema.
+Respostas recebidas em 12/10/2026 e já aplicadas:
+
+| Pergunta | Resposta (no sistema) | Onde mudar |
+|---|---|---|
+| Horário de atendimento | seg–sex 8h–11h e 14h–19h · sáb 8h–11h e 13h–18h · dom fechado | `backend/app/seed.py` → `EXPEDIENTE` |
+| Limpeza de pele | 1h40 (100 min) | `backend/app/seed.py` → `SERVICOS` |
+| Massagem terapêutica | 50 min | `backend/app/seed.py` → `SERVICOS` |
+| WhatsApp | (99) 98821-6488 → `5599988216488` | `frontend/js/config.js` e `frontend/index.html` |
+| Antecedência | "marcar um dia antes": nada no mesmo dia, a partir de amanhã | env `ANTECEDENCIA_MINIMA_DIAS` (1) |
+| Sinal | 50% antecipado para garantir o horário (texto no resumo e na página inicial) | env `SINAL_PERCENTUAL` |
+
+Ainda em aberto:
 
 | Pergunta | Hoje | Onde mudar |
 |---|---|---|
-| Duração da limpeza de pele e da massagem terapêutica | 60 min | `backend/app/seed.py` |
-| Dias e horários de atendimento (tem almoço?) | seg–sex 9h–18h, sáb 9h–13h | `backend/app/seed.py` → `EXPEDIENTE` (um dia pode ter várias faixas) |
-| Antecedência mínima | 2h | env `ANTECEDENCIA_MINIMA_MINUTOS` |
+| E-mail de acesso ao painel | — | env `ADMIN_EMAIL` no deploy |
+| Política de cancelamento / devolução do sinal | não definida | texto na tela de confirmação, se ela quiser |
 | Até quantos dias à frente | 30 | env `DIAS_MAXIMOS_AGENDAMENTO` |
 | Prazo para pagar o Pix | 30 min | env `PAGAMENTO_EXPIRA_MINUTOS` |
-| **Número do WhatsApp** — o código usa `5522999879500`, a página mostra `+55 99 98821-6488` | — | `frontend/js/config.js` e `frontend/index.html` |
-| Política de cancelamento / devolução do sinal | não definida | texto na tela de confirmação, se ela quiser |
 
 > O seed só insere quando a tabela está vazia. Ajuste o `seed.py` **antes** do
 > primeiro deploy; depois disso, mudanças vão direto no banco.
