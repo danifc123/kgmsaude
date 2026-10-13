@@ -10,21 +10,25 @@ from app.models import HorarioFuncionamento, Servico, Usuario
 from app.services.auth_service import gerar_hash_senha
 
 # (id, nome, categoria, duração em min, preço em centavos, exige endereço)
-# Limpeza de pele e massagem terapêutica: 60 min provisórios — confirmar com a Katiuschia.
 SERVICOS = [
     ("revitalizacao-labial", "Revitalização labial", "Facial", 15, 5000, False),
     ("revitalizacao-facial", "Revitalização facial", "Facial", 60, 7000, False),
-    ("limpeza-pele", "Limpeza de pele", "Facial", 60, 15000, False),
+    ("limpeza-pele", "Limpeza de pele", "Facial", 100, 15000, False),
     ("ventosa-terapia", "Ventosa terapia", "Corporal", 30, 8000, False),
     ("esfoliacao-corporal", "Esfoliação corporal", "Corporal", 30, 10000, False),
     ("detox-termal", "Detox termal", "Corporal", 30, 12000, False),
     ("massagem-relaxante", "Massagem relaxante", "Corporal", 45, 12000, False),
-    ("massagem-terapeutica", "Massagem terapêutica", "Corporal", 60, 13000, False),
+    ("massagem-terapeutica", "Massagem terapêutica", "Corporal", 50, 13000, False),
     ("massagem-domicilio", "Massagem a domicílio", "Corporal", 60, 18000, True),
 ]
 
-# Provisório: segunda a sexta 9h–18h, sábado 9h–13h. 0 = segunda.
-EXPEDIENTE = [(dia, time(9), time(18)) for dia in range(5)] + [(5, time(9), time(13))]
+# (dia da semana, abre, fecha) — 0 = segunda. Cada dia tem duas faixas, com pausa no meio.
+EXPEDIENTE = [
+    *[(dia, time(8), time(11)) for dia in range(5)],
+    *[(dia, time(14), time(19)) for dia in range(5)],
+    (5, time(8), time(11)),
+    (5, time(13), time(18)),
+]
 
 
 def popular_banco(db: Session) -> None:
