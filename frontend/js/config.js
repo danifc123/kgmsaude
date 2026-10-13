@@ -5,5 +5,5 @@ export const CONFIG = {
   fusoHorario: "-03:00",
   instagram: "https://instagram.com/katiuschia_garcia",
   pixChave: "63226867393",
-  whatsappNumero: "5522999879500",
+  whatsappNumero: "5599988216488",
 };

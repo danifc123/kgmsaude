@@ -11,7 +11,6 @@ import {
   linkWhatsApp,
 } from "./formatadores.js";
 
-const DIAS_EXIBIDOS = 30;
 const INTERVALO_POLLING_MS = 4000;
 
 const ICONE_ALERTA = "M12 8v5M12 16.5v.5M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z";
@@ -26,7 +25,8 @@ const horariosEl = document.getElementById("horarios");
 const resultadoEl = document.getElementById("etapa-resultado");
 
 const estado = {
-  configPagamento: { pixAutomatico: false, provedor: "manual" },
+  configAgenda: { antecedenciaMinimaDias: 1, diasMaximosAgendamento: 30 },
+  configPagamento: { pixAutomatico: false, provedor: "manual", sinalPercentual: 50 },
   data: null,
   enviando: false,
   horario: null,
@@ -61,10 +61,18 @@ async function carregarHorarios() {
   }
 }
 
-function renderizarDias() {
+// Primeiro dia que a cliente pode escolher ("marcar um dia antes" → amanhã).
+function primeiroDiaPermitido() {
   const hoje = new Date();
-  const dias = Array.from({ length: DIAS_EXIBIDOS }, (_, i) => {
-    const dia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + i);
+  return new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + estado.configAgenda.antecedenciaMinimaDias);
+}
+
+function renderizarDias() {
+  const { antecedenciaMinimaDias, diasMaximosAgendamento } = estado.configAgenda;
+  const primeiro = primeiroDiaPermitido();
+  const quantidade = diasMaximosAgendamento - antecedenciaMinimaDias + 1;
+  const dias = Array.from({ length: quantidade }, (_, i) => {
+    const dia = new Date(primeiro.getFullYear(), primeiro.getMonth(), primeiro.getDate() + i);
     const iso = dataIso(dia);
     return el(
       "button",
@@ -128,10 +136,20 @@ function renderizarResumo() {
       el("span", { class: "price" }, formatarMoeda(total)),
     ),
     el("div", { class: "summary-meta" }, `Duração aproximada: ${formatarDuracao(duracao)}`),
+    el(
+      "div",
+      { class: "summary-meta" },
+      `Pagamento de ${estado.configPagamento.sinalPercentual}% antecipado para garantir seu horário. ` +
+        `Agendamentos com no mínimo ${textoDias(estado.configAgenda.antecedenciaMinimaDias)} de antecedência.`,
+    ),
     el("a", { class: "summary-edit", href: "index.html" }, "Alterar serviços"),
   );
   document.getElementById("campo-endereco").hidden = !estado.servicos.some((s) => s.exigeEndereco);
   document.getElementById("campo-email").hidden = !estado.configPagamento.pixAutomatico;
+}
+
+function textoDias(quantidade) {
+  return quantidade === 1 ? "1 dia" : `${quantidade} dias`;
 }
 
 function selecionarDia(iso) {
@@ -389,7 +407,12 @@ function renderizarSinalManual(agendamento) {
 async function iniciar() {
   const agendamentoId = new URLSearchParams(window.location.search).get("agendamento");
   try {
-    const [catalogo, configPagamento] = await Promise.all([request("/servicos"), request("/pagamentos/config")]);
+    const [catalogo, configPagamento, configAgenda] = await Promise.all([
+      request("/servicos"),
+      request("/pagamentos/config"),
+      request("/agenda/config"),
+    ]);
+    estado.configAgenda = configAgenda;
     estado.configPagamento = configPagamento;
 
     if (agendamentoId) {
@@ -409,7 +432,7 @@ async function iniciar() {
     return;
   }
   renderizarResumo();
-  estado.data = dataIso(new Date());
+  estado.data = dataIso(primeiroDiaPermitido());
   renderizarDias();
   carregarHorarios();
   botaoConfirmar.addEventListener("click", reservar);

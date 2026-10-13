@@ -23,7 +23,10 @@ class Settings(BaseSettings):
 
     admin_email: str = "admin@kgsaude.local"
     admin_password: str = "admin"
-    antecedencia_minima_minutos: int = 120
+    # Agendamento só a partir de N dias depois de hoje (1 = a partir de amanhã).
+    antecedencia_minima_dias: int = 1
+    # Folga extra em minutos, útil se um dia ela aceitar marcar no mesmo dia.
+    antecedencia_minima_minutos: int = 0
     cors_origins: list[str] = ["http://127.0.0.1:8000"]
     database_url: str = "sqlite:///./kg.db"
     dias_maximos_agendamento: int = 30

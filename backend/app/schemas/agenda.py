@@ -5,6 +5,13 @@ from pydantic import Field, model_validator
 from app.schemas.base import CamelModel
 
 
+class AgendaConfigRead(CamelModel):
+    """Janela de datas que a cliente pode escolher."""
+
+    antecedencia_minima_dias: int
+    dias_maximos_agendamento: int
+
+
 class BloqueioCreate(CamelModel):
     fim: datetime
     inicio: datetime

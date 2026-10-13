@@ -64,14 +64,13 @@ class AgendaService:
         ocupados += [
             (b.inicio, b.fim) for b in self.agenda.listar_bloqueios_entre(inicio_dia, fim_dia)
         ]
-        antecedencia = timedelta(minutes=self.settings.antecedencia_minima_minutos)
 
         return gerar_horarios_livres(
             data=data,
             duracao=timedelta(minutes=duracao_minutos),
             expediente=expediente,
             ocupados=ocupados,
-            primeiro_horario_permitido=self.agora() + antecedencia,
+            primeiro_horario_permitido=self._primeiro_horario_permitido(),
             passo=timedelta(minutes=self.settings.intervalo_grade_minutos),
         )
 
@@ -87,6 +86,18 @@ class AgendaService:
         """
         outros = self.agendamentos.listar_ocupando_entre(inicio, fim, self.agora(), agendamento_id)
         return not outros and not self.agenda.listar_bloqueios_entre(inicio, fim)
+
+    def _primeiro_horario_permitido(self) -> datetime:
+        """
+        Regra da Katiuschia: "marcar um dia antes" — nada no mesmo dia. O limite é o
+        início do dia hoje + ANTECEDENCIA_MINIMA_DIAS, somado à folga em minutos.
+        """
+        agora = self.agora()
+        primeiro_dia = agora.date() + timedelta(days=self.settings.antecedencia_minima_dias)
+        return max(
+            datetime.combine(primeiro_dia, time.min),
+            agora + timedelta(minutes=self.settings.antecedencia_minima_minutos),
+        )
 
     def _validar_data(self, data: date) -> None:
         dias = self.settings.dias_maximos_agendamento
