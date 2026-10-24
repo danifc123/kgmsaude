@@ -17,8 +17,10 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # Começa em "manual" (chave Pix + comprovante no WhatsApp). Quando a conta do
+      # Mercado Pago estiver pronta: trocar para "mercado_pago" e preencher o token.
       - key: PAGAMENTO_PROVEDOR
-        value: mercado_pago
+        value: manual
       - key: MERCADO_PAGO_ACCESS_TOKEN
         sync: false
       - key: MERCADO_PAGO_WEBHOOK_SECRET
