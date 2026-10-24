@@ -22,8 +22,15 @@ body.painel{background:var(--ink);}
   padding:24px 16px;
 }
 .login-card{width:100%;max-width:380px;}
-.login-logo{display:block;width:150px;margin:0 auto 6px;}
-.login .sub{text-align:center;color:var(--muted);font-size:0.82rem;margin:0 0 24px;letter-spacing:0.04em;}
+.login-logo{display:block;width:min(240px, 70%);height:auto;margin:0 auto 14px;}
+.login .sub{
+  text-align:center;
+  color:var(--muted);
+  font-size:0.72rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  margin:0 0 26px;
+}
 .login .btn{width:100%;}
 
 /* ============ Estrutura ============ */
