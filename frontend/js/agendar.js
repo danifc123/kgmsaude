@@ -1,7 +1,7 @@
 import { ApiError, request } from "./api.js";
 import * as carrinho from "./carrinho.js";
 import { CONFIG } from "./config.js";
-import { copiarTexto, el, icone } from "./dom.js";
+import { carregandoComAviso, copiarTexto, el, erroComNovaTentativa, icone } from "./dom.js";
 import {
   dataIso,
   formatarDataLonga,
@@ -404,8 +404,29 @@ function renderizarSinalManual(agendamento) {
 
 // endregion
 
+// Primeiro dia (até uma semana à frente) com horário livre; evita abrir num domingo fechado.
+async function primeiroDiaComHorario() {
+  const ids = estado.servicos.map((s) => s.id).join(",");
+  for (let i = 0; i < 7; i++) {
+    const dia = dataIso(somarDias(primeiroDiaPermitido(), i));
+    try {
+      const resposta = await request(`/agenda/horarios?data=${dia}&servicos=${ids}`);
+      if (resposta.horarios.length) return dia;
+    } catch {
+      break;
+    }
+  }
+  return dataIso(primeiroDiaPermitido());
+}
+
+function somarDias(data, dias) {
+  return new Date(data.getFullYear(), data.getMonth(), data.getDate() + dias);
+}
+
 async function iniciar() {
   const agendamentoId = new URLSearchParams(window.location.search).get("agendamento");
+  const resumoEl = document.getElementById("resumo");
+  const pararAviso = carregandoComAviso(resumoEl);
   try {
     const [catalogo, configPagamento, configAgenda] = await Promise.all([
       request("/servicos"),
@@ -423,8 +444,11 @@ async function iniciar() {
     const ids = carrinho.ler();
     estado.servicos = catalogo.filter((s) => ids.includes(s.id));
   } catch (erro) {
-    mostrarErro(erro.message);
+    // O erro aparece no lugar do "Carregando…", com botão para tentar de novo.
+    erroComNovaTentativa(resumoEl, erro.message);
     return;
+  } finally {
+    pararAviso();
   }
 
   if (estado.servicos.length === 0) {
@@ -432,8 +456,10 @@ async function iniciar() {
     return;
   }
   renderizarResumo();
-  estado.data = dataIso(primeiroDiaPermitido());
+  horariosEl.replaceChildren(el("p", { class: "loading" }, "Buscando o primeiro dia com horário…"));
+  estado.data = await primeiroDiaComHorario();
   renderizarDias();
+  diasEl.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: "nearest", inline: "center" });
   carregarHorarios();
   botaoConfirmar.addEventListener("click", reservar);
 }

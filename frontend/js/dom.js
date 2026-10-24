@@ -17,6 +17,28 @@ export function el(tag, atributos = {}, ...filhos) {
   return elemento;
 }
 
+// Texto de carregamento que, se demorar, explica que o servidor pode estar "acordando".
+export function carregandoComAviso(alvo, texto = "Carregando…", esperaMs = 5000) {
+  const paragrafo = el("p", { "aria-live": "polite", class: "loading" }, texto);
+  alvo.replaceChildren(paragrafo);
+  const aviso = setTimeout(() => {
+    paragrafo.textContent = `${texto} Na primeira visita do dia o site pode levar até 1 minuto para abrir.`;
+  }, esperaMs);
+  return () => clearTimeout(aviso);
+}
+
+// Mensagem de erro com botão para recarregar a página.
+export function erroComNovaTentativa(alvo, mensagem) {
+  alvo.replaceChildren(
+    el(
+      "div",
+      { class: "alert", role: "alert" },
+      el("p", { style: "margin:0 0 10px" }, mensagem),
+      el("button", { class: "btn btn-ghost btn-sm", onClick: () => window.location.reload(), type: "button" }, "Tentar de novo"),
+    ),
+  );
+}
+
 // Ícone SVG de traço a partir de um path.
 export function icone(d) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
