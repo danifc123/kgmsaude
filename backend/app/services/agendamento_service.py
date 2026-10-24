@@ -131,14 +131,19 @@ class AgendamentoService:
         self.db.commit()
         return agendamento
 
-    def listar(self, data: date | None) -> list[Agendamento]:
-        """Agendamentos de um dia; sem data, todos a partir de hoje."""
+    def listar(self, inicio: date | None = None, fim: date | None = None) -> list[Agendamento]:
+        """
+        Agendamentos que começam entre `inicio` e `fim` (datas inclusivas). Sem `fim`,
+        só o dia de `inicio`; sem nenhum dos dois, todos a partir de hoje.
+        """
         self._expirar_vencidos()
-        if data is None:
-            inicio = datetime.combine(self.agora().date(), time.min)
-            return self.agendamentos.listar_entre(inicio, inicio + timedelta(days=365))
-        inicio = datetime.combine(data, time.min)
-        return self.agendamentos.listar_entre(inicio, inicio + timedelta(days=1))
+        if inicio is None:
+            inicio = self.agora().date()
+            fim = inicio + timedelta(days=365)
+        fim = fim or inicio
+        return self.agendamentos.listar_entre(
+            datetime.combine(inicio, time.min), datetime.combine(fim + timedelta(days=1), time.min)
+        )
 
     def _buscar(self, agendamento_id: str) -> Agendamento:
         agendamento = self.agendamentos.buscar(agendamento_id)

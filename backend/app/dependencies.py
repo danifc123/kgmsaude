@@ -13,6 +13,7 @@ from app.services.agenda_service import AgendaService
 from app.services.agendamento_service import AgendamentoService
 from app.services.auth_service import AuthService
 from app.services.catalogo_service import CatalogoService
+from app.services.financeiro_service import FinanceiroService
 from app.services.pagamento_service import PagamentoService
 
 _bearer = HTTPBearer(auto_error=False)
@@ -44,6 +45,10 @@ def get_auth_service(db: DbSession) -> AuthService:
 
 def get_catalogo_service(db: DbSession) -> CatalogoService:
     return CatalogoService(db)
+
+
+def get_financeiro_service(db: DbSession) -> FinanceiroService:
+    return FinanceiroService(db, agora_local)
 
 
 def get_pagamento_service(db: DbSession) -> PagamentoService:
