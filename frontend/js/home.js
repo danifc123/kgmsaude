@@ -1,7 +1,7 @@
 import { request } from "./api.js";
 import * as carrinho from "./carrinho.js";
 import { CONFIG } from "./config.js";
-import { el } from "./dom.js";
+import { carregandoComAviso, el, erroComNovaTentativa } from "./dom.js";
 import { formatarDuracao, formatarMoeda, linkWhatsApp } from "./formatadores.js";
 
 const CATEGORIAS = ["Facial", "Corporal"];
@@ -72,6 +72,7 @@ function criarTituloSecao(texto) {
 }
 
 async function carregarCatalogo() {
+  const pararAviso = carregandoComAviso(catalogoEl, "Carregando serviços…");
   try {
     const servicos = await request("/servicos");
     servicosPorId = new Map(servicos.map((s) => [s.id, s]));
@@ -87,7 +88,9 @@ async function carregarCatalogo() {
     );
     atualizarCarrinho();
   } catch (erro) {
-    catalogoEl.replaceChildren(el("p", { class: "alert" }, erro.message));
+    erroComNovaTentativa(catalogoEl, erro.message);
+  } finally {
+    pararAviso();
   }
 }
 
