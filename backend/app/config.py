@@ -1,9 +1,11 @@
+import json
 from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
@@ -27,7 +29,8 @@ class Settings(BaseSettings):
     antecedencia_minima_dias: int = 1
     # Folga extra em minutos, útil se um dia ela aceitar marcar no mesmo dia.
     antecedencia_minima_minutos: int = 0
-    cors_origins: list[str] = ["http://127.0.0.1:8000"]
+    # Só precisa se o site estiver em outro domínio que a API; aqui a API serve o site.
+    cors_origins: Annotated[list[str], NoDecode] = ["http://127.0.0.1:8000"]
     database_url: str = "sqlite:///./kg.db"
     dias_maximos_agendamento: int = 30
     environment: str = "development"
@@ -41,6 +44,19 @@ class Settings(BaseSettings):
     sinal_percentual: int = 50
     timezone: str = "America/Fortaleza"
     url_publica: str = ""  # ex: https://kgsaude.onrender.com — usada no webhook
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _ler_lista_de_origens(cls, valor: object) -> object:
+        """Aceita vazio, JSON (["https://a"]) ou lista separada por vírgula (https://a,https://b)."""
+        if not isinstance(valor, str):
+            return valor
+        texto = valor.strip()
+        if not texto:
+            return []
+        if texto.startswith("["):
+            return json.loads(texto)
+        return [origem.strip() for origem in texto.split(",") if origem.strip()]
 
     @field_validator("database_url")
     @classmethod
