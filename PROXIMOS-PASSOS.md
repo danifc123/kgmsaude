@@ -33,14 +33,26 @@
 
 O link do checkout (`agendar.html?agendamento=…`) pode ser recarregado sem perder o QR.
 
-### Katiuschia (`/admin.html`)
+### Katiuschia — painel (`/admin.html`)
 
-- Agenda por dia, "Todos os próximos" e "Só pendentes".
-- Cada cartão mostra a situação do Pix (aguardando até hh:mm / pago em …).
-- **Confirmar sinal** (manual, se ela receber por fora) → **Concluir**, ou **Cancelar**.
-- **Aviso de devolução**: se o Pix caiu depois que o horário já foi ocupado, ou
-  se ela cancelou um agendamento pago, o cartão pede para devolver o sinal.
-- Folgas e bloqueios (dia inteiro ou faixa de horário).
+Feito para o computador (menu lateral) e continua funcionando no celular (menu no topo).
+
+| Tela | O que tem |
+|---|---|
+| **Visão geral** | Saudação, indicadores (hoje, próximos 7 dias, aguardando sinal, recebido no mês), agenda de hoje e "Precisa da sua atenção" (sinais a confirmar, Pix aguardando, devoluções) |
+| **Agenda** | Calendário da semana (seg–sáb) com os horários coloridos por status, folgas hachuradas, fora do expediente listrado e linha do "agora". No celular vira agenda do dia |
+| **Agendamentos** | Tabela com período (próximos, este mês, mês passado, datas), filtro de status, busca por nome/telefone/código e **Baixar planilha** (CSV para Excel) |
+| **Financeiro** | Por mês: recebido pelo site (Pix), faturamento, a receber no dia, sinais confirmados à mão, gráfico de Pix por dia e lista de pagamentos. Avisa devoluções pendentes |
+| **Folgas** | Bloquear dia(s) inteiros ou faixa de horário, lista das próximas folgas e o horário de atendimento |
+| **Serviços e horários** | Editar nome, categoria, duração e preço de cada serviço, tirar do site / voltar ao site, criar serviço novo e mudar o horário de atendimento da semana (várias faixas por dia). Tudo reflete no site na hora |
+
+Clicar em qualquer agendamento abre a **gaveta de detalhes**: serviços, valores
+(total, sinal, restante), situação do Pix, contato, observação e os botões
+**Confirmar sinal recebido** / **Marcar como concluído** / **Cancelar**.
+
+> O "recebido pelo site" vem do nosso banco (cada Pix aprovado fica registrado),
+> não da API do Mercado Pago. São valores brutos: a taxa do Mercado Pago aparece
+> só no extrato dela.
 
 ### Regras do pagamento
 
@@ -89,8 +101,13 @@ Ainda em aberto:
 | Até quantos dias à frente | 30 | env `DIAS_MAXIMOS_AGENDAMENTO` |
 | Prazo para pagar o Pix | 30 min | env `PAGAMENTO_EXPIRA_MINUTOS` |
 
-> O seed só insere quando a tabela está vazia. Ajuste o `seed.py` **antes** do
-> primeiro deploy; depois disso, mudanças vão direto no banco.
+> O `seed.py` só grava os dados iniciais na primeira subida (banco vazio). Depois
+> disso, a própria Katiuschia muda serviços, preços e horários pela tela
+> **Serviços e horários** do painel — tudo fica no banco.
+>
+> ✅ Testado em PostgreSQL 16 (o mesmo do Neon) em 23/10: criação das tabelas,
+> agendamento, checkout Pix, expiração, pagamento atrasado, painel completo e
+> edição de serviços/horários.
 
 ## 2. Mercado Pago
 
@@ -110,22 +127,35 @@ Na conta **dela** (a que vai receber):
 > teste final é um agendamento real com sinal pequeno (ex.: criar um serviço de
 > R$ 2 temporário) e conferir a confirmação automática.
 
-## 3. Deploy
+## 3. Contas e deploy
 
 Uma única aplicação: a API serve `/api/*` e o site (`frontend/`). Arquivos prontos:
-`Dockerfile` (raiz) e `render.yaml`.
+`Dockerfile` (raiz) e `render.yaml` (começa em `PAGAMENTO_PROVEDOR=manual`).
 
-1. **Banco** — criar um Postgres gratuito no [Neon](https://neon.tech) e copiar a
-   connection string (pode colar como `postgresql://…`; a API ajusta o driver).
-2. **Render** — New → **Blueprint** → este repositório (branch `master` depois do
-   merge). Preencher as variáveis pedidas:
-   `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (forte, entregar a ela em mãos),
-   `MERCADO_PAGO_ACCESS_TOKEN`, `URL_PUBLICA` (`https://…onrender.com`),
-   `CORS_ORIGINS` (`["https://…onrender.com"]`). `JWT_SECRET` é gerado sozinho.
-3. Configurar o webhook (passo 2.4) e adicionar `MERCADO_PAGO_WEBHOOK_SECRET`.
-4. Teste ponta a ponta com Pix real; no painel, conferir "Pix pago em…".
-5. Instagram: trocar o link da bio.
-6. Git: `backup/master-AAAA-MM-DD` → merge `dev` → `master` → tag **`v2.0.0`**.
+| # | Onde | Link | Para quê |
+|---|---|---|---|
+| 1 | Gmail | <https://accounts.google.com/signup> | E-mail da loja — usar em todas as contas abaixo e no login do painel |
+| 2 | Neon | <https://console.neon.tech/signup> | Banco de dados (Postgres gratuito) |
+| 3 | Render | <https://dashboard.render.com/register> | Hospedagem do site + API (gratuito) |
+| 4 | Registro.br *(opcional)* | <https://registro.br> | Domínio próprio `.com.br` (~R$ 40/ano). Sem ele o site fica em `….onrender.com` |
+| 5 | Mercado Pago *(depois)* | <https://www.mercadopago.com.br/developers/panel/app> | Pix automático (seção 2) |
+
+1. **E-mail da loja** — criar o Gmail (ex.: `kgespacosaude@gmail.com`). Ele vira o
+   `ADMIN_EMAIL` do painel.
+2. **Neon** — entrar com o Gmail da loja → criar projeto `kg-espaco-saude` (região
+   mais próxima do Brasil) → copiar a **connection string**.
+3. **Git** — `backup/master-AAAA-MM-DD` → merge `dev` → `master`.
+4. **Render** — entrar com o Gmail da loja → conectar o GitHub (autorizar o
+   repositório `kgmsaude`) → **New → Blueprint** → escolher o repositório. Preencher:
+   `DATABASE_URL` (do Neon), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (forte, entregar a ela
+   em mãos), `URL_PUBLICA` e `CORS_ORIGINS` com o endereço que o Render mostrar
+   (`https://kg-espaco-saude.onrender.com` e `["https://kg-espaco-saude.onrender.com"]`).
+   Deixar os campos do Mercado Pago vazios por enquanto.
+5. **Testar no celular dela** — agendar pelo site, entrar no painel, confirmar o sinal.
+6. **Instagram** — trocar o link da bio. Tag **`v2.0.0`**.
+7. **Quando o Mercado Pago estiver pronto** — no Render, trocar
+   `PAGAMENTO_PROVEDOR` para `mercado_pago`, colar o token, configurar o webhook
+   (seção 2) e fazer um Pix real de valor baixo.
 
 > Plano gratuito do Render "dorme" após 15 min sem acesso (a primeira visita
 > demora ~30 s). Se incomodar, o plano Starter resolve.
@@ -136,7 +166,6 @@ Uma única aplicação: a API serve `/api/*` e o site (`frontend/`). Arquivos pr
 
 ## Ideias para depois
 
-- Tela no painel para editar preços, durações e expediente.
 - Lembrete automático no WhatsApp na véspera.
 - Estorno do sinal pelo painel (API de reembolso do Mercado Pago).
 - Testes automatizados — prioridade: `gerar_horarios_livres`, `calcular_sinal`,
@@ -163,7 +192,13 @@ backend/app/
 frontend/
 ├── index.html · agendar.html · admin.html
 ├── css/   base.css + um por página
-└── js/    api, carrinho, config, dom, formatadores + um por página (ES modules)
+└── js/    api, carrinho, config, dom, formatadores, home, agendar (ES modules)
+    └── painel/
+        ├── painel.js      # login, menu, rotas (#/inicio, #/agenda, ...)
+        ├── sessao.js      # JWT e requisições autenticadas
+        ├── comum.js       # status, ações, ícones, datas
+        ├── detalhe.js     # gaveta de detalhes do agendamento
+        └── telas/         # visao-geral, agenda, agendamentos, financeiro, folgas
 ```
 
 ### API
@@ -178,9 +213,12 @@ frontend/
 | POST | `/api/pagamentos/webhook` | assinatura do Mercado Pago |
 | POST | `/api/dev/pagamentos/{id}/aprovar` | só com `PAGAMENTO_PROVEDOR=fake` |
 | POST | `/api/auth/login` | público |
-| GET | `/api/admin/agendamentos?data=` | admin |
+| GET | `/api/admin/agendamentos?data=` ou `?inicio=&fim=` | admin |
 | PATCH | `/api/admin/agendamentos/{id}` — `{ "status": "CONFIRMADO" }` | admin |
-| GET · POST · DELETE | `/api/admin/bloqueios` | admin |
+| GET · POST · DELETE | `/api/admin/bloqueios` (`?inicio=&fim=` opcional) | admin |
+| GET · PUT | `/api/admin/expediente` | admin |
+| GET · POST | `/api/admin/servicos` · PATCH `/api/admin/servicos/{id}` | admin |
+| GET | `/api/admin/financeiro?mes=2026-10-01` | admin |
 
 Documentação interativa: http://127.0.0.1:8000/docs
 

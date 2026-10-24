@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.exceptions import NaoEncontradoError, RegraDeNegocioError
-from app.models import Bloqueio
+from app.models import Bloqueio, HorarioFuncionamento
 from app.repositories.agenda_repository import AgendaRepository
 from app.repositories.agendamento_repository import AgendamentoRepository
 
@@ -115,8 +115,29 @@ class AgendaService:
         self.db.commit()
         return bloqueio
 
-    def listar_bloqueios_futuros(self) -> list[Bloqueio]:
-        return self.agenda.listar_bloqueios_a_partir(self.agora())
+    def listar_bloqueios(self, inicio: date | None, fim: date | None) -> list[Bloqueio]:
+        """Bloqueios do período [inicio, fim] (datas inclusivas); sem período, os vigentes."""
+        if inicio is None or fim is None:
+            return self.agenda.listar_bloqueios_a_partir(self.agora())
+        return self.agenda.listar_bloqueios_entre(
+            datetime.combine(inicio, time.min), datetime.combine(fim + timedelta(days=1), time.min)
+        )
+
+    def atualizar_expediente(
+        self, faixas: list[tuple[int, time, time]]
+    ) -> list[HorarioFuncionamento]:
+        """
+        Substitui o horário de atendimento da semana. Vale para novos agendamentos;
+        os já marcados continuam como estão.
+        """
+        self.agenda.substituir_expediente(
+            [HorarioFuncionamento(dia_semana=d, abre_as=a, fecha_as=f) for d, a, f in faixas]
+        )
+        self.db.commit()
+        return self.agenda.listar_expediente()
+
+    def listar_expediente(self) -> list[HorarioFuncionamento]:
+        return self.agenda.listar_expediente()
 
     def remover_bloqueio(self, bloqueio_id: int) -> None:
         bloqueio = self.agenda.buscar_bloqueio(bloqueio_id)
